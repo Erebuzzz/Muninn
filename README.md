@@ -14,6 +14,7 @@ A living memory for your work: captures conversations you choose, connects the d
    TALK -> UNDERSTAND -> CONNECT -> REMEMBER -> NOTICE SOMETHING IMPORTANT -> TELL ME
    ```
 4. **Verifiable Provenance**: Every stored claim retains its origin (source conversation, speaker, timestamp, and confidence status).
+5. **Zero Cold-Start Edge Execution**: The primary backend runs on Cloudflare Workers with Hono and Neon Serverless PostgreSQL (`@neondatabase/serverless`), guaranteeing sub-millisecond response times without container spin-down or idle delays.
 
 ---
 
@@ -22,10 +23,10 @@ A living memory for your work: captures conversations you choose, connects the d
 ```mermaid
 flowchart TD
     subgraph Capture [Voice Capture Layer]
-        A[User starts capture session] --> B[Browser AudioWorklet 24 kHz]
+        A[User starts capture session] --> B[Browser or Android AudioWorklet 24 kHz]
         B -->|PCM16 Stream| C[AssemblyAI Voice Agent API]
         C -->|Quiet companion responses| B
-        C -->|Session Artifacts: Audio & Timeline| D[FastAPI Ingestion]
+        C -->|Session Artifacts: Audio & Timeline| D[Cloudflare Worker / Hono API]
     end
 
     subgraph Extraction [Extraction & Triage Engine]
@@ -135,7 +136,7 @@ erDiagram
 
 ## 4. The Agent Engine
 
-Muninn divides responsibilities across four distinct agents:
+Muninn divides responsibilities across four distinct services:
 
 1. **The Voice Agent (AssemblyAI)**:
    - Quiet listening companion with one-sentence replies.
@@ -154,12 +155,28 @@ Muninn divides responsibilities across four distinct agents:
 ## 5. Getting Started
 
 ### Prerequisites
-- Python 3.10+
-- Node.js 18+
+- Node.js 18+ (tested on Node v26)
+- Wrangler CLI 4+ (`npm install -g wrangler` or via `npx wrangler`)
 - Neon PostgreSQL connection string (configured with `pgvector`)
 - AssemblyAI API Key
 
-### Backend Setup
+### Primary Backend Setup: Cloudflare Workers (TypeScript + Hono)
+```bash
+cd worker
+npm install
+
+# Copy example dev variables
+cp .dev.vars.example .dev.vars
+# Add your DATABASE_URL and ASSEMBLYAI_API_KEY in .dev.vars
+
+# Run locally on port 8000
+npm run dev
+
+# Deploy to Cloudflare Workers global network
+npm run deploy
+```
+
+### Alternative Backend: FastAPI (Python)
 ```bash
 cd backend
 python -m venv venv
@@ -176,7 +193,7 @@ cp .env.example .env
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Frontend Setup
+### Frontend Setup (Next.js 15)
 ```bash
 cd frontend
 npm install
@@ -223,7 +240,7 @@ flowchart TD
 ### Key Advantages over Mobile Web:
 1. **Low-Memory Killer (LMK) Resilience**: `RecordingForegroundService` binds with `FOREGROUND_SERVICE_TYPE_MICROPHONE` and an ongoing persistent notification, preventing the Android operating system from killing the audio pipeline when RAM runs low.
 2. **Local-First Draft Durability**: All turns and transcripts write to local flash storage immediately as spoken, allowing seamless instant recovery even if the app process restarts.
-3. **Offline Buffering**: When internet drops or bandwidth fluctuates, completed sessions and claim drafts queue locally on the device and sync to FastAPI and Neon PostgreSQL upon reconnection.
+3. **Offline Buffering**: When internet drops or bandwidth fluctuates, completed sessions and claim drafts queue locally on the device and sync to the backend upon reconnection.
 
 ### Android Build & Emulation:
 ```bash
@@ -239,4 +256,3 @@ cd android
 # Run on Android Emulator (e.g., MuninnTablet)
 android run --device=emulator-5554
 ```
-
