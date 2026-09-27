@@ -236,7 +236,7 @@ export const ElementalFlowGraph: React.FC = () => {
             </span>
           </div>
           <span
-            className="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-950/80 border"
+            className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-slate-950/80 border"
             style={{
               color: selectedNode.color,
               borderColor: selectedNode.border,

@@ -78,7 +78,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="glass-window max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div className="glass-window rounded-2xl overflow-hidden max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-slate-800/60">
           <div>
@@ -94,7 +94,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1"
+            className="text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -104,7 +104,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
         </div>
 
         {/* Privacy Note */}
-        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 my-4 text-xs text-orange-200/90 leading-relaxed">
+        <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3.5 my-4 text-xs text-orange-200/90 leading-relaxed">
           <strong>Privacy Default:</strong> If you dismiss or ignore this prompt, flagged items are automatically <strong>discarded</strong>. Only confirmed items are permanently indexed into your memory graph.
         </div>
 
@@ -122,10 +122,10 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
             pendingClaims.map((claim) => (
               <div
                 key={claim.id}
-                className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-2.5"
+                className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs space-y-2.5"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <span className="font-mono text-[10px] uppercase px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
                     Flagged for Review
                   </span>
                   <span className="text-slate-400 font-mono text-[10px]">
@@ -145,7 +145,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleDecision(claim.id, "discard")}
-                      className={`px-3 py-1 rounded text-xs transition border ${
+                      className={`px-3 py-1 rounded-full text-xs font-mono transition border ${
                         decisions[claim.id] === "discard"
                           ? "bg-rose-600/20 text-rose-300 border-rose-500/50 font-medium"
                           : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
@@ -155,7 +155,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
                     </button>
                     <button
                       onClick={() => handleDecision(claim.id, "store")}
-                      className={`px-3 py-1 rounded text-xs transition border ${
+                      className={`px-3 py-1 rounded-full text-xs font-mono transition border ${
                         decisions[claim.id] === "store"
                           ? "bg-emerald-600/20 text-emerald-300 border-emerald-500/50 font-medium"
                           : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
@@ -174,7 +174,7 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
         <div className="flex items-center justify-between pt-4 border-t border-slate-800/60 mt-auto">
           <button
             onClick={handleDiscardAll}
-            className="text-xs text-rose-400 hover:text-rose-300 transition"
+            className="text-xs text-rose-400 hover:text-rose-300 transition font-mono"
           >
             Discard All & Close
           </button>
@@ -182,14 +182,14 @@ export const SensitivityModal: React.FC<SensitivityModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white transition"
+              className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition font-mono"
             >
               Cancel
             </button>
             <button
               onClick={submitReview}
               disabled={pendingClaims.length === 0}
-              className="px-5 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50 font-mono shadow"
             >
               Confirm Decisions
             </button>

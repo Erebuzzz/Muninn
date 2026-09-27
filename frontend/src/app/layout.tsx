@@ -54,7 +54,7 @@ export default function RootLayout({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base tracking-tight text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition">Muninn</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-orange-500/10 dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-orange-500/30">
                       LIVING MEMORY
                     </span>
                   </div>

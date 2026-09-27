@@ -120,9 +120,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Storage & Privacy Status Bar */}
-      <div className="glass-window relative z-10 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <div className="glass-window relative z-10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0">
             <MythicIcon.Shield size={16} />
           </div>
           <div>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
                   ? "Tablet Storage: Hardware Local-First"
                   : "Curated Sample Vault: Ephemeral Guest Sandbox"}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-500/30">
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-900 text-sky-300 border border-sky-500/30">
                 {user ? "Cloud Synced" : isNative ? "Device Local" : "Curated Demo"}
               </span>
             </div>
@@ -151,14 +151,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setPrivacyModalOpen(true)}
-            className="px-3 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-slate-900/10 dark:bg-slate-900 hover:bg-slate-900/20 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 rounded-lg transition"
+            className="px-3.5 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-slate-900/10 dark:bg-slate-900 hover:bg-slate-900/20 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 rounded-xl transition"
           >
             Privacy
           </button>
           {!user && (
             <button
               onClick={openAuthModal}
-              className="px-3.5 py-1.5 text-xs font-mono font-semibold text-orange-500 dark:text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg transition"
+              className="px-4 py-1.5 text-xs font-mono font-semibold text-orange-500 dark:text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-xl transition"
             >
               Sign In (Optional)
             </button>
@@ -207,7 +207,7 @@ export default function DashboardPage() {
             {pendingCount > 0 && (
               <button
                 onClick={() => setReviewModalOpen(true)}
-                className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition"
+                className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition"
               >
                 Review Gate
               </button>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1 flex items-center gap-1.5 font-mono">
             <span>Online</span>
-            <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded bg-sky-500/10 dark:bg-sky-950/40 border border-sky-500/30 dark:border-sky-800/40">
+            <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full bg-sky-500/10 dark:bg-sky-950/40 border border-sky-500/30 dark:border-sky-800/40">
               Active
             </span>
           </div>
@@ -262,7 +262,7 @@ export default function DashboardPage() {
                     ({sessions.length})
                   </span>
                   {!user && (
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+                    <span className="text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
                       CURATED SAMPLE VAULT
                     </span>
                   )}
@@ -281,7 +281,7 @@ export default function DashboardPage() {
                   {sessions.map((sess) => (
                     <div
                       key={sess.id}
-                      className="p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 text-xs flex items-center justify-between hover:border-orange-500/50 transition group shadow-sm"
+                      className="p-3.5 rounded-2xl bg-white/70 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 text-xs flex items-center justify-between hover:border-orange-500/50 transition group shadow-sm"
                     >
                       <div>
                         <div className="text-slate-900 dark:text-slate-100 font-medium">
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
+                        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
                           {sess.claim_count || 0} claims
                         </span>
                       </div>
