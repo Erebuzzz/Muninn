@@ -38,14 +38,29 @@ export const BackendStatusPill: React.FC<BackendStatusPillProps> = ({
     }
   };
 
+  const isEdge =
+    typeof window !== "undefined" &&
+    ((process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes("localhost")) ||
+      (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1"));
+
+  const onlineText = isEdge ? "Edge API Online" : "Local API Online";
+  const onlineTitle = isEdge
+    ? "Cloudflare Worker Edge API Online (muninn-api.kshitiz23kumar.workers.dev)"
+    : "Local Backend API Online (Port 8000)";
+
+  const offlineText = isEdge ? "Edge API Offline" : "API Offline";
+  const offlineTitle = isEdge
+    ? "Cloudflare Worker Edge API Unreachable"
+    : "Backend Server Disconnected on Port 8000";
+
   if (online) {
     return (
       <div
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 shadow-sm ${className}`}
-        title="API Server Online: Port 8000"
+        title={onlineTitle}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        <span>API: 8000 Online</span>
+        <span>{onlineText}</span>
       </div>
     );
   }
@@ -53,11 +68,11 @@ export const BackendStatusPill: React.FC<BackendStatusPillProps> = ({
   return (
     <div
       className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-950/60 border border-orange-500/60 text-[10px] font-mono text-orange-300 shadow-md shadow-orange-500/10 ${className}`}
-      title="Backend Server Disconnected on Port 8000"
+      title={offlineTitle}
     >
       <div className="flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping" />
-        <span>API Offline: Port 8000</span>
+        <span>{offlineText}</span>
       </div>
       <button
         onClick={handleReconnect}
