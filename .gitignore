@@ -1,5 +1,5 @@
 # Muninn Agent Brain (strictly for local agent reference, never commit)
-brain/
+/brain/
 
 # Specs and prompt documents
 Muninn Full Implementation Spec.html

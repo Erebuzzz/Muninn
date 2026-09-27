@@ -1,4 +1,5 @@
 import { Preferences } from "@capacitor/preferences";
+import { Capacitor } from "@capacitor/core";
 import { Claim, ResurfacingItem, Conversation, User } from "./types";
 
 export interface DraftTurn {
@@ -30,8 +31,24 @@ class LocalStorageManager {
   private CACHED_RESURFACING_KEY = "muninn_cached_resurfacing";
   private AUTH_TOKEN_KEY = "muninn_auth_token";
   private AUTH_USER_KEY = "muninn_auth_user";
+  private GUEST_SESSIONS_KEY = "muninn_guest_sessions";
+  private GUEST_CLAIMS_KEY = "muninn_guest_claims";
+  private GUEST_RESURFACING_KEY = "muninn_guest_resurfacing";
+  private TABLET_SESSIONS_KEY = "muninn_tablet_sessions";
+  private TABLET_CLAIMS_KEY = "muninn_tablet_claims";
+  private TABLET_RESURFACING_KEY = "muninn_tablet_resurfacing";
+
   private inMemoryToken: string | null = null;
   private inMemoryUser: User | null = null;
+
+  isNative(): boolean {
+    if (typeof window === "undefined") return false;
+    return (
+      Capacitor.isNativePlatform() ||
+      window.location.protocol === "capacitor:" ||
+      (window.location.hostname === "localhost" && (!window.location.port || window.location.port === "80" || window.location.port === "443"))
+    );
+  }
 
   private isClient(): boolean {
     return typeof window !== "undefined";
@@ -214,6 +231,104 @@ class LocalStorageManager {
     try {
       const raw = localStorage.getItem(this.CACHED_RESURFACING_KEY);
       return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Guest Storage (sessionStorage: discarded when tab is closed)
+  saveGuestSession(session: Conversation): void {
+    if (!this.isClient()) return;
+    try {
+      const list = this.getGuestSessions();
+      sessionStorage.setItem(this.GUEST_SESSIONS_KEY, JSON.stringify([session, ...list.filter(s => s.id !== session.id)]));
+    } catch (e) {
+      console.warn("Failed to save guest session:", e);
+    }
+  }
+
+  getGuestSessions(): Conversation[] {
+    if (!this.isClient()) return [];
+    try {
+      const raw = sessionStorage.getItem(this.GUEST_SESSIONS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveGuestClaims(claims: Claim[]): void {
+    if (!this.isClient()) return;
+    try {
+      const existing = this.getGuestClaims();
+      const map = new Map<string, Claim>();
+      [...claims, ...existing].forEach(c => map.set(c.id, c));
+      sessionStorage.setItem(this.GUEST_CLAIMS_KEY, JSON.stringify(Array.from(map.values())));
+    } catch (e) {
+      console.warn("Failed to save guest claims:", e);
+    }
+  }
+
+  getGuestClaims(): Claim[] {
+    if (!this.isClient()) return [];
+    try {
+      const raw = sessionStorage.getItem(this.GUEST_CLAIMS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  clearGuestData(): void {
+    if (!this.isClient()) return;
+    try {
+      sessionStorage.removeItem(this.GUEST_SESSIONS_KEY);
+      sessionStorage.removeItem(this.GUEST_CLAIMS_KEY);
+      sessionStorage.removeItem(this.GUEST_RESURFACING_KEY);
+    } catch (e) {
+      console.warn("Failed to clear guest data:", e);
+    }
+  }
+
+  // Tablet Local Storage (Preferences: retained on Android hardware across restarts)
+  async saveTabletSession(session: Conversation): Promise<void> {
+    if (!this.isClient()) return;
+    try {
+      const list = await this.getTabletSessions();
+      const updated = [session, ...list.filter(s => s.id !== session.id)];
+      await Preferences.set({ key: this.TABLET_SESSIONS_KEY, value: JSON.stringify(updated) });
+    } catch (e) {
+      console.warn("Failed to save tablet session:", e);
+    }
+  }
+
+  async getTabletSessions(): Promise<Conversation[]> {
+    if (!this.isClient()) return [];
+    try {
+      const { value } = await Preferences.get({ key: this.TABLET_SESSIONS_KEY });
+      return value ? JSON.parse(value) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async saveTabletClaims(claims: Claim[]): Promise<void> {
+    if (!this.isClient()) return;
+    try {
+      const existing = await this.getTabletClaims();
+      const map = new Map<string, Claim>();
+      [...claims, ...existing].forEach(c => map.set(c.id, c));
+      await Preferences.set({ key: this.TABLET_CLAIMS_KEY, value: JSON.stringify(Array.from(map.values())) });
+    } catch (e) {
+      console.warn("Failed to save tablet claims:", e);
+    }
+  }
+
+  async getTabletClaims(): Promise<Claim[]> {
+    if (!this.isClient()) return [];
+    try {
+      const { value } = await Preferences.get({ key: this.TABLET_CLAIMS_KEY });
+      return value ? JSON.parse(value) : [];
     } catch {
       return [];
     }

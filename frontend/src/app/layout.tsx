@@ -56,14 +56,22 @@ export default function RootLayout({
             {children}
           </main>
 
-          <footer className="border-t border-[#1c2330] bg-[#0c0f15] py-4 px-6 text-center text-xs text-[#8b9bb4]">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-              <span>
-                Muninn: <em className="text-white/80">You decide what gets heard. We decide what is worth remembering.</em>
-              </span>
-              <span className="font-mono text-[11px] text-[#5a6a84]">
-                Structured state extracted with full turn-by-turn provenance
-              </span>
+          <footer className="border-t border-[#1c2330] bg-[#0c0f15] py-4 px-6 text-xs text-[#8b9bb4]">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <span>
+                  Muninn: <em className="text-white/80">You decide what gets heard. We decide what is worth remembering.</em>
+                </span>
+                <span className="text-[#3b4758] hidden sm:inline">•</span>
+                <span className="text-[11px] text-[#5a6a84]">
+                  Engineered by <a href="https://github.com/Erebuzzz" target="_blank" rel="noreferrer" className="text-amber-400 hover:underline">Kshitiz Kumar</a>
+                </span>
+              </div>
+              <div className="flex items-center gap-3 font-mono text-[11px] text-[#5a6a84]">
+                <span>kshitiz23kumar@gmail.com</span>
+                <span>•</span>
+                <span className="text-emerald-400/90">Privacy Promise: Consent First</span>
+              </div>
             </div>
           </footer>
         </AuthProvider>
