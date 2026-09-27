@@ -325,7 +325,11 @@ export class ContextEngineService {
         body: JSON.stringify({
           model,
           messages: [
-            { role: "system", content: CHAT_SYSTEM_PROMPT },
+            {
+              role: "system",
+              content: CHAT_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
             {
               role: "user",
               content: `USER QUESTION: ${query}\n\nGROUND TRUTH CLAIMS:\n${claimsContext}`,
@@ -333,6 +337,8 @@ export class ContextEngineService {
           ],
           temperature: 0.2,
           max_tokens: 800,
+          fallbacks: [{ model: "gemini-2.5-flash" }],
+          fallback_config: { depth: 1, retry: true },
         }),
       });
 
@@ -345,8 +351,17 @@ export class ContextEngineService {
       }
 
       const data = (await resp.json()) as {
+        request_id?: string;
+        model?: string;
         choices: Array<{ message: { content: string } }>;
       };
+
+      console.log(
+        `[LLM Gateway] Chat answered. request_id: ${data.request_id || "unknown"}, model: ${
+          data.model || model
+        }`
+      );
+
       const answerText = data.choices[0]?.message?.content?.trim() || "";
 
       return {

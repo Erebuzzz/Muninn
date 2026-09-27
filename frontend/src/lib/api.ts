@@ -152,6 +152,30 @@ export const api = {
     });
   },
 
+  async submitQuickNote(audioBlob: Blob): Promise<{
+    conversation_id: string;
+    transcript_text: string;
+    claims_extracted: number;
+    entities_found: number;
+    resurfacing_events_triggered: number;
+  }> {
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "quick-note.wav");
+
+    const baseUrl = getBaseUrl();
+    const res = await fetch(`${baseUrl}/sessions/quick-note`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Quick note failed (${res.status}): ${errText}`);
+    }
+
+    return res.json();
+  },
+
   async listClaims(params?: {
     conversation_id?: string;
     entity_name?: string;
