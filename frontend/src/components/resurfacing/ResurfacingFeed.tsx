@@ -5,6 +5,8 @@ import { ResurfacingItem } from "@/lib/types";
 import { api } from "@/lib/api";
 import { ResurfacingCard } from "./ResurfacingCard";
 
+import { MythicIcon } from "@/components/common/MythicIcons";
+
 interface ResurfacingFeedProps {
   onInspectClaim?: (claimId: string) => void;
   refreshTrigger?: number;
@@ -43,13 +45,14 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
   };
 
   return (
-    <div className="glass-window p-5 relative overflow-hidden">
+    <div className="glass-window p-6 relative overflow-hidden rounded-2xl shadow-2xl">
       {/* Decorative Norse Runes Horizon Line */}
       <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
 
       <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4">
         <div>
           <div className="flex items-center gap-2">
+            <MythicIcon.Radar size={18} className="text-orange-400" />
             <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
               Proactive Resurfacing Radar
             </h2>
@@ -60,18 +63,16 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
             )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Automatic radar alerts when related blockers or commitments reappear
+            Continuous radar scanning temporal constellation for unblocked dependencies, open questions, and conflicting decisions
           </p>
         </div>
 
         <button
           onClick={fetchItems}
-          className="text-xs text-slate-400 hover:text-orange-300 transition p-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800"
+          className="text-xs text-slate-400 hover:text-orange-400 transition p-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800"
           title="Refresh Radar"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-          </svg>
+          <MythicIcon.Refresh size={14} />
         </button>
       </div>
 
@@ -84,7 +85,7 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
           No open blockers or conflicting decisions pending right now. All commitments aligned.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => (
             <ResurfacingCard
               key={item.id}
