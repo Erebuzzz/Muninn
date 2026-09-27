@@ -6,6 +6,8 @@ import { soundFX } from "@/lib/soundfx";
 import { localStore } from "@/lib/storage";
 import { startForegroundRecording, stopForegroundRecording } from "@/lib/foregroundService";
 import { Waveform } from "./Waveform";
+import { MythicMicButton } from "./MythicMicButton";
+import { runeCipherDecode } from "@/lib/animations";
 
 interface VoiceStudioProps {
   onSessionCompleted?: (sessionId: string) => void;
@@ -17,6 +19,7 @@ interface TranscriptTurn {
   speaker: string;
   text: string;
   timestamp: string;
+  isNew?: boolean;
 }
 
 export const VoiceStudio: React.FC<VoiceStudioProps> = ({
@@ -24,12 +27,12 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   onExtractionFinished,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [status, setStatus] = useState<"idle" | "connecting" | "listening" | "processing">("idle");
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [turns, setTurns] = useState<TranscriptTurn[]>([]);
-  const [rawText, setRawText] = useState("");
   const [manualInputOpen, setManualInputOpen] = useState(false);
-  const [manualTitle, setManualTitle] = useState("PCB & Heatsink Sync");
+  const [manualTitle, setManualTitle] = useState("PCB & Thermal Heatsink Sync");
   const [manualTranscript, setManualTranscript] = useState(
     "Speaker A: We got the updated revision of the PCB today from the fabricator.\n" +
     "Speaker A: The mounting holes on the heatsink bracket do not align with the board.\n" +
@@ -45,6 +48,26 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const [isRecordingMemo, setIsRecordingMemo] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const turnsEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Live timer for capture duration
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (isRecording) {
+      timer = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setRecordingSeconds(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isRecording]);
+
+  useEffect(() => {
+    turnsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [turns]);
 
   const startLiveSession = async () => {
     try {
@@ -172,6 +195,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       speaker,
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      isNew: true,
     };
 
     setTurns((prev) => {
@@ -206,7 +230,6 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     }
 
     await stopForegroundRecording();
-
     setIsRecording(false);
 
     if (currentSessionId) {
@@ -224,6 +247,14 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     }
 
     setStatus("idle");
+  };
+
+  const handleMicToggle = () => {
+    if (isRecording) {
+      endSession();
+    } else {
+      startLiveSession();
+    }
   };
 
   const startQuickMemo = async () => {
@@ -251,6 +282,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
               speaker: "You (Quick Note)",
               text: res.transcript_text,
               timestamp: new Date().toLocaleTimeString(),
+              isNew: true,
             },
           ]);
           if (onExtractionFinished) onExtractionFinished();
@@ -298,23 +330,37 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   };
 
   return (
-    <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-5 shadow-lg relative overflow-hidden">
-      {/* Top Banner with session state */}
-      <div className="flex items-center justify-between border-b border-[#1c2330] pb-4 mb-4">
+    <div className="relative rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-6 shadow-2xl overflow-hidden">
+      {/* Decorative Norse Runes Horizon Line */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+
+      {/* Header and Telemetry */}
+      <div className="flex items-center justify-between border-b border-slate-800/60 pb-4 mb-5">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${
-            status === "listening" ? "bg-amber-400 animate-ping" : status === "connecting" ? "bg-cyan-400 animate-pulse" : "bg-[#2a3547]"
-          }`} />
+          <div
+            className={`w-3 h-3 rounded-full transition-all duration-500 ${
+              status === "listening"
+                ? "bg-amber-400 shadow-md shadow-amber-500/80 animate-ping"
+                : status === "connecting"
+                ? "bg-sky-400 animate-pulse"
+                : "bg-slate-700"
+            }`}
+          />
           <div>
-            <h2 className="text-sm font-semibold text-white tracking-wide uppercase">
-              Capture Session
-            </h2>
-            <p className="text-xs text-[#8b9bb4]">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
+                Odin&apos;s Ear: Acoustic Capture
+              </h2>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-amber-400">
+                24kHz PCM
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
               {status === "listening"
-                ? "Muninn is listening. Speak freely; clarify when asked."
+                ? "Muninn is actively transcribing. Ground-truth claims crystallize automatically."
                 : status === "processing"
-                ? "Extracting claims, linking entities, evaluating resurfacing..."
-                : "Opt-in recording. Nothing is stored until you decide."}
+                ? "Dissecting semantic claims, entities, and surfacing vectors..."
+                : "Opt-in recording. Zero retention until you decide."}
             </p>
           </div>
         </div>
@@ -322,91 +368,99 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setManualInputOpen(!manualInputOpen)}
-            className="text-xs px-2.5 py-1 rounded bg-[#161b24] hover:bg-[#1f2633] text-[#8b9bb4] hover:text-white border border-[#222c3e] transition"
+            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-700/70 transition shadow-sm"
           >
-            {manualInputOpen ? "Close Import" : "Import / Seed Scenario"}
+            {manualInputOpen ? "Close Scenario" : "Import / Seed Scenario"}
           </button>
         </div>
       </div>
 
-      {/* Manual Import / Synthetic Test Panel */}
+      {/* Manual Ingest Panel */}
       {manualInputOpen && (
-        <div className="mb-5 p-4 rounded-lg bg-[#0e1219] border border-[#2a3547] text-xs">
-          <div className="font-semibold text-white mb-1">Pre-seed / Ingest Conversation</div>
-          <p className="text-[#8b9bb4] mb-3">
-            Paste a transcript with tagged speakers. Claims, relationships, and sensitivity flags will be automatically extracted.
+        <div className="mb-5 p-4 rounded-xl bg-slate-900/90 border border-amber-500/30 text-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-semibold text-slate-200">Ingest Conversation Transcript</span>
+            <span className="text-[10px] font-mono text-amber-400">SYNTHETIC INGESTION</span>
+          </div>
+          <p className="text-slate-400 mb-3 text-[11px]">
+            Input meeting transcript with tagged speakers. Hypotheses, decisions, and tasks will be extracted with ground-truth citations.
           </p>
           <input
             type="text"
             value={manualTitle}
             onChange={(e) => setManualTitle(e.target.value)}
-            className="w-full bg-[#161b24] border border-[#222c3e] rounded px-3 py-1.5 text-white mb-2 focus:outline-none focus:border-amber-500"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 mb-2.5 focus:outline-none focus:border-amber-500 text-xs font-mono"
             placeholder="Conversation Title"
           />
           <textarea
             value={manualTranscript}
             onChange={(e) => setManualTranscript(e.target.value)}
             rows={5}
-            className="w-full bg-[#161b24] border border-[#222c3e] rounded p-2.5 text-white font-mono text-[11px] mb-3 focus:outline-none focus:border-amber-500"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-200 font-mono text-[11px] mb-3 focus:outline-none focus:border-amber-500 leading-relaxed"
             placeholder="Speaker A: We noticed..."
           />
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setManualInputOpen(false)}
-              className="px-3 py-1.5 rounded text-[#8b9bb4] hover:text-white"
+              className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs"
             >
               Cancel
             </button>
             <button
               onClick={handleManualImport}
               disabled={status === "processing"}
-              className="px-4 py-1.5 rounded bg-amber-500 hover:bg-amber-600 text-black font-semibold transition disabled:opacity-50"
+              className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50"
             >
-              Run Extraction
+              Crystallize Memory
             </button>
           </div>
         </div>
       )}
 
-      {/* Visualizer */}
-      <Waveform isActive={status === "listening"} />
+      {/* Central Mythic Raven Mic & Waveform Display */}
+      <div className="my-6 flex flex-col items-center justify-center">
+        <MythicMicButton
+          isRecording={isRecording}
+          onToggle={handleMicToggle}
+          disabled={status === "connecting" || status === "processing" || isRecordingMemo}
+          duration={recordingSeconds}
+          size={96}
+        />
+        <Waveform isActive={status === "listening"} className="mt-4" />
+      </div>
 
-      {/* Live Transcripts Scroll */}
-      <div className="min-h-[140px] max-h-[220px] overflow-y-auto rounded-lg bg-[#0c0f15] border border-[#1a212d] p-3 my-4 space-y-2.5">
+      {/* Live Stream Runic Transcript Feed */}
+      <div className="min-h-[140px] max-h-[220px] overflow-y-auto rounded-xl bg-slate-950/70 border border-slate-800/80 p-3.5 space-y-2.5 shadow-inner">
         {turns.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-xs text-[#4b5563] italic">
+          <div className="h-28 flex flex-col items-center justify-center text-xs text-slate-500 italic">
+            <span className="font-mono text-slate-600 text-sm mb-1">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</span>
             {status === "listening"
-              ? "Listening... spoken utterances will appear here in real time."
-              : "No active audio. Click 'Start Capture' or 'Import Scenario' to begin."}
+              ? "Awaiting speech... Spoken utterances decode in real time."
+              : "No active audio stream. Tap the mythic raven mic to initiate live capture."}
           </div>
         ) : (
           turns.map((turn) => (
-            <div key={turn.id} className="text-xs flex gap-2">
-              <span
-                className={`font-mono font-medium px-1.5 py-0.5 rounded text-[10px] shrink-0 h-fit ${
-                  turn.speaker === "Muninn"
-                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    : "bg-[#1f2633] text-[#94a3b8]"
-                }`}
-              >
-                {turn.speaker}
-              </span>
-              <span className="text-[#e2e8f0] flex-1 leading-relaxed">{turn.text}</span>
-              <span className="text-[10px] text-[#4b5563] shrink-0">{turn.timestamp}</span>
-            </div>
+            <TranscriptTurnRow key={turn.id} turn={turn} />
           ))
         )}
+        <div ref={turnsEndRef} />
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="text-[11px] text-[#8b9bb4]">
+      {/* Tactical Sub-Controls (Quick Voice Memo & State HUD) */}
+      <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-800/40">
+        <div className="text-[11px] font-mono text-slate-400 flex items-center gap-2">
           {isRecording ? (
-            <span className="text-amber-400 font-medium">Live capture in progress (AudioWorklet 24 kHz)</span>
+            <span className="text-amber-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              Live Stream Active (PCM 24kHz)
+            </span>
           ) : isRecordingMemo ? (
-            <span className="text-cyan-400 font-medium">Recording voice memo (Sync STT)</span>
+            <span className="text-sky-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+              Voice Memo Recording (Sync STT)
+            </span>
           ) : (
-            <span>Ready for capture or memo</span>
+            <span className="text-slate-500">Capture Idle. Ready for stream or memo.</span>
           )}
         </div>
 
@@ -415,43 +469,61 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             <button
               onClick={isRecordingMemo ? stopQuickMemo : startQuickMemo}
               disabled={status === "connecting" || status === "processing"}
-              className={`px-4 py-2 rounded-lg font-semibold text-xs transition shadow-md flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-medium transition shadow-md flex items-center gap-2 ${
                 isRecordingMemo
-                  ? "bg-rose-600 hover:bg-rose-700 text-white animate-pulse"
-                  : "bg-[#18202d] hover:bg-[#222c3e] text-[#a0b0cb] hover:text-white border border-[#2a3547]"
+                  ? "bg-rose-600 hover:bg-rose-500 text-white animate-pulse"
+                  : "bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-sky-300 border border-slate-700/80"
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${isRecordingMemo ? "bg-white" : "bg-cyan-400"}`} />
-              {isRecordingMemo ? "Finish Memo" : "Quick Memo (Sync STT)"}
+              <span
+                className={`w-2 h-2 rounded-full ${isRecordingMemo ? "bg-white" : "bg-sky-400"}`}
+              />
+              {isRecordingMemo ? "Finish Memo" : "Quick Memo"}
             </button>
           )}
 
-          {!isRecordingMemo && (
-            !isRecording ? (
-              <button
-                onClick={startLiveSession}
-                disabled={status === "connecting" || status === "processing"}
-                className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                </svg>
-                Live Capture Session
-              </button>
-            ) : (
-              <button
-                onClick={endSession}
-                disabled={status === "processing"}
-                className="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
-              >
-                <span className="w-2 h-2 rounded bg-white" />
-                End & Remember
-              </button>
-            )
+          {isRecording && (
+            <button
+              onClick={endSession}
+              disabled={status === "processing"}
+              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-semibold transition shadow-md flex items-center gap-2"
+            >
+              <span className="w-2 h-2 rounded-sm bg-white" />
+              End & Crystallize
+            </button>
           )}
         </div>
       </div>
     </div>
   );
 };
+
+// Runic decipher text row component
+function TranscriptTurnRow({ turn }: { turn: TranscriptTurn }) {
+  const textRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (turn.isNew && textRef.current) {
+      runeCipherDecode(textRef.current, turn.text, 700);
+      turn.isNew = false;
+    }
+  }, [turn]);
+
+  return (
+    <div className="text-xs flex items-start gap-2.5">
+      <span
+        className={`font-mono font-medium px-2 py-0.5 rounded text-[10px] shrink-0 h-fit border ${
+          turn.speaker === "Muninn"
+            ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+            : "bg-slate-900 text-sky-300 border-slate-800"
+        }`}
+      >
+        {turn.speaker}
+      </span>
+      <span ref={textRef} className="text-slate-200 flex-1 leading-relaxed font-sans">
+        {turn.text}
+      </span>
+      <span className="text-[10px] font-mono text-slate-500 shrink-0">{turn.timestamp}</span>
+    </div>
+  );
+}

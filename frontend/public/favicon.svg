@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="46" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.6" stroke-dasharray="4 3"/>
+  <polygon points="50,12 85,26 95,50 85,74 50,88 15,74 5,50 15,26" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.4"/>
+  <!-- Left Wing -->
+  <path d="M 50,22 L 32,28 L 18,38 L 10,50 L 18,54 L 28,48 L 22,60 L 32,58 L 40,50 Z" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Right Wing -->
+  <path d="M 50,22 L 68,28 L 82,38 L 90,50 L 82,54 L 72,48 L 78,60 L 68,58 L 60,50 Z" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Central Diamond Knot -->
+  <path d="M 50,34 L 62,48 L 50,66 L 38,48 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- Tail Knot -->
+  <path d="M 50,66 L 56,76 L 50,86 L 44,76 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Crest Beak -->
+  <path d="M 44,18 L 50,14 L 56,18 L 50,26 Z" fill="#f59e0b" stroke="#fbbf24" stroke-width="1.5"/>
+  <!-- Eyes -->
+  <circle cx="44" cy="26" r="3" fill="#fbbf24"/>
+  <circle cx="56" cy="26" r="3" fill="#fbbf24"/>
+  <line x1="50" y1="34" x2="50" y2="66" stroke="#fbbf24" stroke-width="1.8"/>
+  <line x1="38" y1="48" x2="62" y2="48" stroke="#38bdf8" stroke-width="1.8"/>
+</svg>

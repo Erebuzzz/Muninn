@@ -5,9 +5,10 @@ import React, { useEffect, useRef } from "react";
 interface WaveformProps {
   isActive: boolean;
   audioData?: number[];
+  className?: string;
 }
 
-export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData }) => {
+export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData, className = "" }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -25,17 +26,26 @@ export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData }) => {
       const height = canvas.height;
       const centerY = height / 2;
 
-      const bars = 36;
+      const bars = 48;
       const barWidth = width / bars - 2;
 
       for (let i = 0; i < bars; i++) {
-        let barHeight = 4;
+        // Distance from center (0 to 1) for mirror harmonic curve
+        const distFromCenter = Math.abs(i - bars / 2) / (bars / 2);
+        const harmonicFalloff = 1 - distFromCenter * 0.45;
+
+        let barHeight = 3;
         if (isActive) {
-          const wave = Math.sin(step * 0.08 + i * 0.25);
-          const noise = audioData && audioData[i % audioData.length] !== undefined
-            ? audioData[i % audioData.length] * 40
-            : 0;
-          barHeight = Math.max(6, Math.abs(wave * 22) + noise);
+          const wave1 = Math.sin(step * 0.09 + i * 0.28);
+          const wave2 = Math.cos(step * 0.05 + i * 0.15);
+          const noise =
+            audioData && audioData[i % audioData.length] !== undefined
+              ? audioData[i % audioData.length] * 48
+              : 0;
+          barHeight = Math.max(
+            4,
+            (Math.abs(wave1 * 14 + wave2 * 8) + noise) * harmonicFalloff
+          );
         }
 
         const x = i * (barWidth + 2);
@@ -43,11 +53,13 @@ export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData }) => {
 
         const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
         if (isActive) {
-          gradient.addColorStop(0, "rgba(245, 158, 11, 0.9)"); // amber
-          gradient.addColorStop(1, "rgba(217, 119, 6, 0.4)");
+          // Mythic gradient: Amber gold crest blending into Norse sky cyan
+          gradient.addColorStop(0, "rgba(245, 158, 11, 0.95)");
+          gradient.addColorStop(0.5, "rgba(251, 191, 36, 0.85)");
+          gradient.addColorStop(1, "rgba(56, 189, 248, 0.65)");
         } else {
-          gradient.addColorStop(0, "rgba(75, 85, 99, 0.4)");
-          gradient.addColorStop(1, "rgba(55, 65, 81, 0.2)");
+          gradient.addColorStop(0, "rgba(71, 85, 105, 0.35)");
+          gradient.addColorStop(1, "rgba(51, 65, 85, 0.15)");
         }
 
         ctx.fillStyle = gradient;
@@ -68,12 +80,12 @@ export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData }) => {
   }, [isActive, audioData]);
 
   return (
-    <div className="w-full flex items-center justify-center py-2">
+    <div className={`w-full flex items-center justify-center ${className}`}>
       <canvas
         ref={canvasRef}
-        width={360}
-        height={60}
-        className="w-full max-w-sm rounded"
+        width={420}
+        height={56}
+        className="w-full max-w-md rounded"
       />
     </div>
   );

@@ -19,6 +19,7 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
 
   const fetchItems = async () => {
     try {
+      setLoading(true);
       const data = await api.getResurfacing();
       setItems(data);
     } catch (e) {
@@ -42,28 +43,31 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
   };
 
   return (
-    <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-5 shadow-lg">
-      <div className="flex items-center justify-between border-b border-[#1c2330] pb-3 mb-4">
+    <div className="rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-5 shadow-2xl relative overflow-hidden">
+      {/* Decorative Norse Runes Horizon Line */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+
+      <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-white tracking-wide uppercase">
-              You Left This Behind
+            <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
+              Proactive Resurfacing Radar
             </h2>
             {items.length > 0 && (
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
-                {items.length}
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                {items.length} ACTIVE
               </span>
             )}
           </div>
-          <p className="text-xs text-[#8b9bb4]">
-            Proactive resurfacing when related entities return to discussion
+          <p className="text-xs text-slate-400 mt-0.5">
+            Automatic radar alerts when related blockers or commitments reappear
           </p>
         </div>
 
         <button
           onClick={fetchItems}
-          className="text-xs text-[#64748b] hover:text-[#94a3b8] transition p-1"
-          title="Refresh Feed"
+          className="text-xs text-slate-400 hover:text-amber-300 transition p-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800"
+          title="Refresh Radar"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
@@ -72,12 +76,12 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
       </div>
 
       {loading ? (
-        <div className="py-8 text-center text-xs text-[#64748b]">
-          Checking stored memory graph...
+        <div className="py-12 text-center text-xs font-mono text-slate-500">
+          Scanning temporal constellation for blockers...
         </div>
       ) : items.length === 0 ? (
-        <div className="py-8 text-center text-xs text-[#64748b] italic">
-          No open blockers or conflicting decisions pending right now.
+        <div className="py-12 text-center text-xs font-mono text-slate-500 italic">
+          No open blockers or conflicting decisions pending right now. All commitments aligned.
         </div>
       ) : (
         <div className="space-y-3">

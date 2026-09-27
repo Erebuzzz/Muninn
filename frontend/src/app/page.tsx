@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { VoiceStudio } from "@/components/studio/VoiceStudio";
 import { ResurfacingFeed } from "@/components/resurfacing/ResurfacingFeed";
 import { MemoryChat } from "@/components/chat/MemoryChat";
@@ -8,11 +8,13 @@ import { MemoryGraphView } from "@/components/graph/MemoryGraphView";
 import { SensitivityModal } from "@/components/review/SensitivityModal";
 import { ClaimInspector } from "@/components/provenance/ClaimInspector";
 import { api } from "@/lib/api";
-import { Conversation, Claim } from "@/lib/types";
+import { Conversation } from "@/lib/types";
 import { useAuth } from "@/lib/authContext";
 import { localStore } from "@/lib/storage";
 import { PrivacyPolicyModal } from "@/components/privacy/PrivacyPolicyModal";
 import { DocsModal } from "@/components/docs/DocsModal";
+import { RavenLogo } from "@/components/brand/RavenLogo";
+import { initMythicDust, elasticRecoil } from "@/lib/animations";
 
 export default function DashboardPage() {
   const { user, openAuthModal, loginDemo } = useAuth();
@@ -25,7 +27,16 @@ export default function DashboardPage() {
   const [inspectedClaimId, setInspectedClaimId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isNative = typeof window !== "undefined" && localStore.isNative();
+
+  // Initialize floating rune dust canvas
+  useEffect(() => {
+    if (canvasRef.current) {
+      const cleanup = initMythicDust(canvasRef.current);
+      return cleanup;
+    }
+  }, []);
 
   const loadData = async () => {
     try {
@@ -51,181 +62,228 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6 pb-20">
+      {/* Floating Mythic Background Particles */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full pointer-events-none opacity-40 z-0"
+      />
+
       <PrivacyPolicyModal isOpen={privacyModalOpen} onClose={() => setPrivacyModalOpen(false)} />
       <DocsModal isOpen={docsModalOpen} onClose={() => setDocsModalOpen(false)} />
 
-      {/* Auth Banner for Guest State */}
-      {!user && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-[#11151c] to-[#11151c] border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+      {/* Hero / Atmospheric Title Section */}
+      <div className="relative z-10 rounded-2xl bg-gradient-to-b from-slate-900/80 via-slate-950/90 to-slate-950/80 border border-slate-800/80 p-6 sm:p-8 backdrop-blur-xl shadow-2xl overflow-hidden">
+        {/* Subtle Norse Knotwork Horizon Accent */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500/20 via-sky-400/40 to-amber-500/20" />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-500/30 text-[11px] font-mono text-amber-300 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              <span>MUNINN • ODIN&apos;S LIVING MIND • ARCHITECTURE v2.0</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-white">
-                  {isNative ? "Android Tablet Storage (Local-First)" : "Web Guest Sandbox (One-Time Session)"}
-                </p>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                  {isNative ? "Stored on Device" : "Temporary Tab State"}
-                </span>
-              </div>
-              <p className="text-xs text-[#8b9bb4] mt-0.5">
-                {isNative
-                  ? "All captured conversations and knowledge graphs remain stored locally on this tablet. Sign-in is optional (syncs to cloud)."
-                  : "Data is kept in temporary tab memory. Sign in or register to permanently store your living memory in the cloud."}
-              </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+              You decide what gets heard. <br className="hidden sm:inline" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-sky-300">
+                We decide what is worth remembering.
+              </span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Continuous conversational capture, ground-truth claim crystallization, and proactive radar for unresolved engineering dependencies.
+            </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+
+          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center gap-3 shrink-0">
             <button
-              onClick={() => setDocsModalOpen(true)}
-              className="px-2.5 py-1.5 text-xs font-mono text-[#8b9bb4] hover:text-white bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] rounded-lg transition"
+              onClick={(e) => {
+                elasticRecoil(e.currentTarget);
+                setDocsModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 text-xs font-mono font-medium border border-slate-700/80 transition flex items-center gap-2 shadow"
             >
-              Docs
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              Interactive Codex
             </button>
             <button
-              onClick={() => setPrivacyModalOpen(true)}
-              className="px-2.5 py-1.5 text-xs font-mono text-[#8b9bb4] hover:text-white bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] rounded-lg transition"
+              onClick={(e) => {
+                elasticRecoil(e.currentTarget);
+                loginDemo();
+              }}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-mono font-semibold transition flex items-center gap-2 shadow-lg shadow-amber-500/10"
             >
-              Privacy
+              <RavenLogo size={16} animated={false} glow={false} />
+              Explore Sample Vault
             </button>
-            <button
-              onClick={() => loginDemo()}
-              className="px-3 py-1.5 text-xs font-mono text-white bg-[#1a2230] hover:bg-[#222c3e] border border-[#2a374c] rounded-lg transition"
-            >
-              Explore Sample
-            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Storage & Privacy Status Bar */}
+      <div className="relative z-10 rounded-xl bg-slate-950/80 border border-slate-800/80 p-4 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-200">
+                {isNative ? "Tablet Storage: Hardware Local-First" : "Web Guest Sandbox: Ephemeral Memory"}
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-500/30">
+                {isNative ? "Device Local" : "Temporary Tab"}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {isNative
+                ? "Captured discussions stay safely on this device. Sign-in is optional for cross-device cloud sync."
+                : "Stored in memory session. Zero server persistence until you sign in."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setPrivacyModalOpen(true)}
+            className="px-3 py-1.5 text-xs font-mono text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition"
+          >
+            Privacy
+          </button>
+          {!user && (
             <button
               onClick={openAuthModal}
-              className="px-3.5 py-1.5 text-xs font-semibold text-[#0a0d12] bg-amber-400 hover:bg-amber-300 rounded-lg transition shadow"
+              className="px-3.5 py-1.5 text-xs font-mono font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition"
             >
-              Sign In
+              Sign In (Optional)
             </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Top Stats Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
-          <div className="text-[11px] font-mono text-[#8b9bb4] uppercase tracking-wider">
+      {/* Telemetry Overview Bar */}
+      <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+          <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Total Sessions
           </div>
-          <div className="text-xl font-bold text-white mt-1">
+          <div className="text-xl font-bold font-mono text-slate-100 mt-1">
             {sessions.length}
           </div>
-          <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Captured conversations
+          <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+            Captured dialogues
           </div>
         </div>
 
-        <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
-          <div className="text-[11px] font-mono text-[#8b9bb4] uppercase tracking-wider">
-            Indexed Claims
+        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+          <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+            Crystallized Claims
           </div>
-          <div className="text-xl font-bold text-amber-400 mt-1">
+          <div className="text-xl font-bold font-mono text-amber-400 mt-1">
             {claimsCount}
           </div>
-          <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Decisions, tasks, and state
+          <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+            Decisions, tasks, states
           </div>
         </div>
 
-        <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
-          <div className="text-[11px] font-mono text-[#8b9bb4] uppercase tracking-wider">
-            Privacy Review Gate
+        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+          <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+            Sensitivity Gate
           </div>
           <div className="flex items-center justify-between mt-1">
-            <span className={`text-xl font-bold ${pendingCount > 0 ? "text-rose-400" : "text-emerald-400"}`}>
+            <span
+              className={`text-xl font-bold font-mono ${
+                pendingCount > 0 ? "text-rose-400" : "text-emerald-400"
+              }`}
+            >
               {pendingCount}
             </span>
             {pendingCount > 0 && (
               <button
                 onClick={() => setReviewModalOpen(true)}
-                className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition"
+                className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition"
               >
-                Review Now
+                Review Gate
               </button>
             )}
           </div>
-          <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            {pendingCount > 0 ? "Flagged sensitive items" : "All clean; consent intact"}
+          <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+            {pendingCount > 0 ? "Items awaiting consent" : "Consent intact"}
           </div>
         </div>
 
-        <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
-          <div className="text-[11px] font-mono text-[#8b9bb4] uppercase tracking-wider">
+        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+          <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Memory Vault
           </div>
-          <div className="text-xl font-bold text-white mt-1 flex items-center gap-1.5">
-            <span>Encrypted</span>
-            <span className="text-xs font-mono text-cyan-400 px-1.5 py-0.2 rounded bg-cyan-950/40 border border-cyan-800/40">
+          <div className="text-xl font-bold text-slate-100 mt-1 flex items-center gap-1.5 font-mono">
+            <span>Online</span>
+            <span className="text-[10px] font-mono text-sky-400 px-1.5 py-0.5 rounded bg-sky-950/40 border border-sky-800/40">
               Active
             </span>
           </div>
-          <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Verified ground-truth graph
+          <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+            Temporal graph synced
           </div>
         </div>
       </div>
 
-      {/* Main Grid: Studio + Feed + Memory Chat */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (7 cols): Studio + Resurfacing Feed */}
+      {/* Main Grid: Studio, Spatial Graph, Feed, Oracle */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column (7 cols): Studio + Spatial Graph + Resurfacing Radar */}
         <div className="lg:col-span-7 space-y-6">
-          <VoiceStudio
-            onExtractionFinished={handleExtractionFinished}
+          <VoiceStudio onExtractionFinished={handleExtractionFinished} />
+
+          <MemoryGraphView
+            refreshTrigger={refreshTrigger}
+            onSelectClaim={(claimId) => setInspectedClaimId(claimId)}
           />
 
           <ResurfacingFeed
             refreshTrigger={refreshTrigger}
             onInspectClaim={(claimId) => setInspectedClaimId(claimId)}
           />
-
-          <MemoryGraphView
-            refreshTrigger={refreshTrigger}
-            onSelectClaim={(claimId) => setInspectedClaimId(claimId)}
-          />
         </div>
 
-        {/* Right Column (5 cols): Living Chat + Recent Sessions */}
+        {/* Right Column (5 cols): Living Oracle Chat + Past Sessions */}
         <div className="lg:col-span-5 space-y-6">
-          <MemoryChat
-            onInspectCitation={(claimId) => setInspectedClaimId(claimId)}
-          />
+          <MemoryChat onInspectCitation={(claimId) => setInspectedClaimId(claimId)} />
 
-          {/* Recent Recorded Sessions */}
-          <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-5 shadow-lg">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1c2330] mb-3">
-              <h2 className="text-sm font-semibold text-white tracking-wide uppercase">
-                Recorded Sessions
-              </h2>
-              <span className="text-[10px] font-mono text-[#8b9bb4]">
-                History ({sessions.length})
-              </span>
+          {/* Past Recorded Sessions List */}
+          <div className="rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-5 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
+                  Recorded Sessions
+                </h2>
+                <span className="text-[10px] font-mono text-slate-400">
+                  ({sessions.length})
+                </span>
+              </div>
+              <span className="text-[9px] font-mono text-amber-400">TEMPORAL LOG</span>
             </div>
 
             {sessions.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#64748b] italic">
+              <div className="py-10 text-center text-xs font-mono text-slate-500 italic">
                 No past sessions recorded yet.
               </div>
             ) : (
-              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
                 {sessions.map((sess) => (
                   <div
                     key={sess.id}
-                    className="p-3 rounded-lg bg-[#0c0f15] border border-[#1e2634] text-xs flex items-center justify-between hover:border-amber-500/30 transition group"
+                    className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs flex items-center justify-between hover:border-amber-500/40 transition group shadow-sm"
                   >
                     <div>
-                      <div className="text-white font-medium">
+                      <div className="text-slate-100 font-medium">
                         {sess.title || "Capture Session"}
                       </div>
-                      <div className="text-[10px] font-mono text-[#64748b] mt-0.5">
+                      <div className="text-[10px] font-mono text-slate-500 mt-0.5">
                         {new Date(sess.started_at).toLocaleString([], {
                           month: "short",
                           day: "numeric",
@@ -236,7 +294,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161b24] text-[#94a3b8] border border-[#222c3e]">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800">
                         {sess.claim_count || 0} claims
                       </span>
                     </div>
@@ -248,38 +306,55 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Sensitivity Review Modal */}
+      {/* Modals */}
       <SensitivityModal
         isOpen={reviewModalOpen}
         onClose={() => setReviewModalOpen(false)}
         onReviewed={() => setRefreshTrigger((prev) => prev + 1)}
       />
 
-      {/* Provenance Inspector Modal */}
       <ClaimInspector
         claimId={inspectedClaimId}
         onClose={() => setInspectedClaimId(null)}
       />
 
-      {/* Quick Access Footer Row */}
-      <div className="flex items-center justify-between text-xs text-[#5a6a84] pt-2 pb-4">
-        <div className="flex items-center gap-4">
+      {/* Floating Tactical Bottom Dock */}
+      <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
+        <div className="pointer-events-auto bg-slate-950/90 border border-slate-800/90 backdrop-blur-xl px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 pr-3 border-r border-slate-800">
+            <RavenLogo size={22} animated={false} glow={false} />
+            <span className="text-[11px] font-mono font-semibold text-slate-200 hidden sm:inline">
+              MUNINN
+            </span>
+          </div>
+
           <button
             onClick={() => setDocsModalOpen(true)}
-            className="hover:text-white transition font-mono text-[11px]"
+            className="text-xs font-mono text-slate-300 hover:text-amber-300 transition flex items-center gap-1.5"
           >
-            Documentation & Guides
+            <span>Codex</span>
           </button>
-          <span>•</span>
+
+          <span className="text-slate-700">•</span>
+
+          <button
+            onClick={() => setReviewModalOpen(true)}
+            className="text-xs font-mono text-slate-300 hover:text-rose-300 transition flex items-center gap-1.5"
+          >
+            <span>Privacy Review</span>
+            {pendingCount > 0 && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+            )}
+          </button>
+
+          <span className="text-slate-700">•</span>
+
           <button
             onClick={() => setPrivacyModalOpen(true)}
-            className="hover:text-white transition font-mono text-[11px]"
+            className="text-xs font-mono text-slate-400 hover:text-slate-200 transition"
           >
-            Privacy Promise & Policy
+            Privacy Policy
           </button>
-        </div>
-        <div className="font-mono text-[11px] text-[#475569]">
-          Muninn Living Memory
         </div>
       </div>
     </div>
