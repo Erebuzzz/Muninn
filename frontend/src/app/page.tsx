@@ -10,6 +10,9 @@ import { ClaimInspector } from "@/components/provenance/ClaimInspector";
 import { api } from "@/lib/api";
 import { Conversation, Claim } from "@/lib/types";
 import { useAuth } from "@/lib/authContext";
+import { localStore } from "@/lib/storage";
+import { PrivacyPolicyModal } from "@/components/privacy/PrivacyPolicyModal";
+import { BrainGraphModal } from "@/components/brain/BrainGraphModal";
 
 export default function DashboardPage() {
   const { user, openAuthModal, loginDemo } = useAuth();
@@ -17,8 +20,12 @@ export default function DashboardPage() {
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [claimsCount, setClaimsCount] = useState<number>(0);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [brainModalOpen, setBrainModalOpen] = useState(false);
   const [inspectedClaimId, setInspectedClaimId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const isNative = typeof window !== "undefined" && localStore.isNative();
 
   const loadData = async () => {
     try {
@@ -45,6 +52,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PrivacyPolicyModal isOpen={privacyModalOpen} onClose={() => setPrivacyModalOpen(false)} />
+      <BrainGraphModal isOpen={brainModalOpen} onClose={() => setBrainModalOpen(false)} />
+
       {/* Auth Banner for Guest State */}
       {!user && (
         <div className="bg-gradient-to-r from-amber-500/10 via-[#11151c] to-[#11151c] border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -56,24 +66,39 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Private Living Memory Workspace</p>
-              <p className="text-xs text-[#8b9bb4]">
-                Sign in to isolate your captured decisions, tasks, and graphs, or explore the pre-seeded engineer demo.
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-white">
+                  {isNative ? "Android Tablet Storage (Local-First)" : "Web Guest Sandbox (One-Time Session)"}
+                </p>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                  {isNative ? "Stored on Device" : "Temporary Tab State"}
+                </span>
+              </div>
+              <p className="text-xs text-[#8b9bb4] mt-0.5">
+                {isNative
+                  ? "All captured conversations and knowledge graphs remain stored locally on this tablet. Sign-in is optional (syncs to cloud)."
+                  : "Data is kept in temporary tab memory. Sign in or register to permanently store your living memory in the cloud."}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setBrainModalOpen(true)}
+              className="px-2.5 py-1.5 text-xs font-mono text-[#8b9bb4] hover:text-white bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] rounded-lg transition"
+            >
+              Brain Graph
+            </button>
             <button
               onClick={() => loginDemo()}
               className="px-3 py-1.5 text-xs font-mono text-white bg-[#1a2230] hover:bg-[#222c3e] border border-[#2a374c] rounded-lg transition"
             >
-              1-Click Demo
+              Developer Demo
             </button>
             <button
               onClick={openAuthModal}
               className="px-3.5 py-1.5 text-xs font-semibold text-[#0a0d12] bg-amber-400 hover:bg-amber-300 rounded-lg transition shadow"
             >
-              Sign In / Register
+              Sign In
             </button>
           </div>
         </div>

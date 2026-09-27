@@ -160,7 +160,7 @@ export function AuthModal() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="engineer@muninn.local"
+              placeholder="kshitiz23kumar@gmail.com"
               className="w-full px-3.5 py-2.5 bg-[#141a24] border border-[#1e2634] rounded-xl text-sm text-white placeholder-[#5a6a84] focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition"
             />
           </div>
@@ -210,7 +210,7 @@ export function AuthModal() {
           disabled={submitting}
           className="w-full py-2 bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] text-xs font-medium text-[#8b9bb4] hover:text-white rounded-xl transition flex items-center justify-center gap-2"
         >
-          <span>Use Seed Engineer Account (5 indexed sessions)</span>
+          <span>Developer Seed Account (Kshitiz Kumar / 5 sessions)</span>
         </button>
       </div>
     </div>

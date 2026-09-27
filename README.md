@@ -256,3 +256,87 @@ cd android
 # Run on Android Emulator (e.g., MuninnTablet)
 android run --device=emulator-5554
 ```
+
+---
+
+## 8. Privacy Policy & Storage Modes
+
+Muninn adheres to a strict privacy-first model across all devices:
+
+### Web Ephemeral Sandbox (Guest Mode)
+- Sign-in and sign-up are completely optional.
+- When unauthenticated on the web application, sessions are treated as one-time sandbox tests.
+- Extracted claims, conversations, and living memory graphs exist strictly in your browser tab memory (`sessionStorage`) and are cleared when the tab closes.
+- Registering or signing in is only required if you choose to permanently retain and synchronize your memory graph across devices in the cloud.
+
+### Mobile & Tablet Android APK (Local-First Storage)
+- Sign-in is 100% optional on native Android hardware.
+- Captured sessions, claims, and graphs are saved directly to local flash storage on your tablet (`@capacitor/preferences` / Android `SharedPreferences`).
+- Data is retained locally across app restarts, system reboots, and offline states without requiring any cloud account.
+- If you subsequently choose to sign in, your local records can synchronize back to your personal cloud vault.
+
+### Privacy Review Gate
+- Utterances marked as sensitive (financial terms, confidential personnel discussions, off-the-record comments) are sequestered in the Privacy Review Gate.
+- Under the **Default-Discard** policy, flagged items are discarded unless explicitly confirmed by the user.
+
+---
+
+## 9. Developer Details
+
+- **Author**: Kshitiz Kumar
+- **GitHub**: [github.com/Erebuzzz](https://github.com/Erebuzzz)
+- **Contact Email**: [kshitiz23kumar@gmail.com](mailto:kshitiz23kumar@gmail.com)
+
+---
+
+## 10. Agent Brain Architecture Graph
+
+The agent workflow and dependency graph is maintained in Mermaid format inside the `brain/graph.mermaid` file. It records every architectural decision, active subsystem, and service relationship:
+
+```mermaid
+flowchart TD
+    Init[Project: Muninn Living Memory] --> Spec[Spec: Opt-in, Provenance, Living Memory]
+    Spec --> DB[Neon PostgreSQL with pgvector provisioned]
+    Spec --> Monorepo[Monorepo Architecture: Web, Cloudflare Worker, Python Backend, Android APK]
+    
+    DB --> SchemaInit[Schema Applied: users with password_hash/salt, conversations, speakers, entities, claims, relationships, task_state, resurfacing_events]
+    
+    Monorepo --> Worker[Primary Backend: Cloudflare Workers + Hono /worker]
+    Monorepo --> Backend[Alternative Backend: FastAPI /backend]
+    Monorepo --> Frontend[Next.js 15 Frontend /frontend]
+    Monorepo --> Android[Capacitor Android Shell /frontend/android]
+
+    Worker --> W_Driver[@neondatabase/serverless: Zero cold-start HTTP driver]
+    Worker --> W_Auth[Auth Service: Web Crypto PBKDF2 100k iters + Hono JWT HS256]
+    Worker --> W_LLMGateway[LLM Gateway: strict json_schema, json-repair, cache_control, fallbacks: gemini-2.5-flash & claude-haiku]
+    Worker --> W_SyncSTT[Sync STT Service: POST sync.assemblyai.com for sub-second quick voice notes]
+    Worker --> W_Services[services: AuthService, VoiceAgentService, ExtractionService, ResurfacingService, ContextEngineService, SyncSTTService]
+    Worker --> W_Routes[routes: auth, sessions with quick-note, claims, review, graph, resurfacing, chat]
+    Worker --> W_Verified[Verified: Typecheck clean, dry-run bundle 91 KiB, live endpoints on port 8000]
+
+    Backend --> BE_DB[app/db: async SQLAlchemy models and session with SSL]
+    Backend --> BE_Services[app/services: VoiceAgent, Extraction, Resurfacing, ContextEngine]
+    Backend --> BE_API[app/api: sessions, claims, review, graph, resurfacing, chat]
+    Backend --> BE_Tests[tests: test_extraction, test_resurfacing: 4/4 passing]
+
+    Frontend --> FE_Auth[components/auth: AuthModal, AuthHeaderButton, AuthProvider with Capacitor Preferences]
+    Frontend --> FE_Audio[public/pcm-processor.js: 24kHz AudioWorklet]
+    Frontend --> FE_Studio[components/studio: VoiceStudio with Live Session & Quick Memo Sync STT]
+    Frontend --> FE_Resurfacing[components/resurfacing: ResurfacingFeed and Card]
+    Frontend --> FE_Review[components/review: SensitivityModal: default discard]
+    Frontend --> FE_Provenance[components/provenance: ClaimInspector with CTE chains]
+    Frontend --> FE_Chat[components/chat: MemoryChat with ground-truth citations]
+    Frontend --> FE_Graph[components/graph: MemoryGraphView interactive explorer]
+    Frontend --> FE_Sound[lib/soundfx.ts: Web Audio API tactile cues]
+    Frontend --> FE_Storage[lib/storage.ts: Local-First Drafts, Offline Queue, and Auth Token Store]
+
+    Android --> AND_Service[RecordingForegroundService: Android Foreground Service]
+    Android --> AND_Plugin[ForegroundRecordingPlugin: Capacitor Native Bridge]
+    Android --> AND_Prefs[Capacitor Preferences Plugin: Android SharedPreferences Token Retention]
+    Android --> AND_Notification[Ongoing Notification: Low-Memory Killer Protection]
+    Android --> AND_AVD[AVD Emulator: MuninnTablet Pixel Tablet on Android 34]
+    Android --> AND_Build[Gradle AssembleDebug: app-debug.apk 4.45 MB]
+    Android --> AND_Verified[AVD Live Verification: Claim Extraction, Provenance Inspector, Resurfacing Feed]
+
+    W_Verified --> ReadyState[Status: Monorepo Enhanced with Self-Contained Auth, LLM Gateway Resilience & Sync STT]
+```

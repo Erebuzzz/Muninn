@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginDemo = async () => {
-    await login("engineer@muninn.local", "muninn2026");
+    await login("kshitiz23kumar@gmail.com", "muninn2026");
   };
 
   const logout = async () => {
