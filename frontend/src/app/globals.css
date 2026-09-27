@@ -36,7 +36,7 @@ body {
   background-color: var(--bg-color);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition: background-color 0.65s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
 }
 
 /* Ensure crisp contrast for text in Helios (Light Mode) */
