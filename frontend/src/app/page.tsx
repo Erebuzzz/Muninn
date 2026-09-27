@@ -12,7 +12,7 @@ import { Conversation, Claim } from "@/lib/types";
 import { useAuth } from "@/lib/authContext";
 import { localStore } from "@/lib/storage";
 import { PrivacyPolicyModal } from "@/components/privacy/PrivacyPolicyModal";
-import { BrainGraphModal } from "@/components/brain/BrainGraphModal";
+import { DocsModal } from "@/components/docs/DocsModal";
 
 export default function DashboardPage() {
   const { user, openAuthModal, loginDemo } = useAuth();
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [claimsCount, setClaimsCount] = useState<number>(0);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
-  const [brainModalOpen, setBrainModalOpen] = useState(false);
+  const [docsModalOpen, setDocsModalOpen] = useState(false);
   const [inspectedClaimId, setInspectedClaimId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -53,7 +53,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PrivacyPolicyModal isOpen={privacyModalOpen} onClose={() => setPrivacyModalOpen(false)} />
-      <BrainGraphModal isOpen={brainModalOpen} onClose={() => setBrainModalOpen(false)} />
+      <DocsModal isOpen={docsModalOpen} onClose={() => setDocsModalOpen(false)} />
 
       {/* Auth Banner for Guest State */}
       {!user && (
@@ -83,16 +83,22 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setBrainModalOpen(true)}
+              onClick={() => setDocsModalOpen(true)}
               className="px-2.5 py-1.5 text-xs font-mono text-[#8b9bb4] hover:text-white bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] rounded-lg transition"
             >
-              Brain Graph
+              Docs
+            </button>
+            <button
+              onClick={() => setPrivacyModalOpen(true)}
+              className="px-2.5 py-1.5 text-xs font-mono text-[#8b9bb4] hover:text-white bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] rounded-lg transition"
+            >
+              Privacy
             </button>
             <button
               onClick={() => loginDemo()}
               className="px-3 py-1.5 text-xs font-mono text-white bg-[#1a2230] hover:bg-[#222c3e] border border-[#2a374c] rounded-lg transition"
             >
-              Developer Demo
+              Explore Sample
             </button>
             <button
               onClick={openAuthModal}
@@ -114,7 +120,7 @@ export default function DashboardPage() {
             {sessions.length}
           </div>
           <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Opt-in capture recordings
+            Captured conversations
           </div>
         </div>
 
@@ -126,7 +132,7 @@ export default function DashboardPage() {
             {claimsCount}
           </div>
           <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Verified state & decisions
+            Decisions, tasks, and state
           </div>
         </div>
 
@@ -154,16 +160,16 @@ export default function DashboardPage() {
 
         <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
           <div className="text-[11px] font-mono text-[#8b9bb4] uppercase tracking-wider">
-            Vector Store
+            Memory Vault
           </div>
           <div className="text-xl font-bold text-white mt-1 flex items-center gap-1.5">
-            <span>Neon PG</span>
+            <span>Encrypted</span>
             <span className="text-xs font-mono text-cyan-400 px-1.5 py-0.2 rounded bg-cyan-950/40 border border-cyan-800/40">
-              pgvector
+              Active
             </span>
           </div>
           <div className="text-[10px] text-[#5a6a84] mt-0.5 font-mono">
-            Serverless memory graph
+            Verified ground-truth graph
           </div>
         </div>
       </div>
@@ -254,6 +260,28 @@ export default function DashboardPage() {
         claimId={inspectedClaimId}
         onClose={() => setInspectedClaimId(null)}
       />
+
+      {/* Quick Access Footer Row */}
+      <div className="flex items-center justify-between text-xs text-[#5a6a84] pt-2 pb-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setDocsModalOpen(true)}
+            className="hover:text-white transition font-mono text-[11px]"
+          >
+            Documentation & Guides
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => setPrivacyModalOpen(true)}
+            className="hover:text-white transition font-mono text-[11px]"
+          >
+            Privacy Promise & Policy
+          </button>
+        </div>
+        <div className="font-mono text-[11px] text-[#475569]">
+          Muninn Living Memory
+        </div>
+      </div>
     </div>
   );
 }
