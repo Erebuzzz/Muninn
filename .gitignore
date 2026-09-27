@@ -1,0 +1,32 @@
+# Muninn Agent Brain (strictly for local agent reference, never commit)
+brain/
+
+# Specs and prompt documents
+Muninn Full Implementation Spec.html
+
+# Dependencies & Build
+node_modules/
+.next/
+out/
+build/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
