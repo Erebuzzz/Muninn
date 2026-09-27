@@ -1,6 +1,30 @@
 # Muninn
 
-A living memory for your work: captures conversations you choose, connects the decisions, problems, tasks, and people inside them, and tells you what is still unfinished and why.
+> **A living memory for your work**: captures conversations you choose, connects the decisions, problems, tasks, and people inside them, and tells you what is still unfinished and why.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
+[![Website](https://img.shields.io/badge/Website-muninn--nmk.pages.dev-orange.svg)](https://muninn-nmk.pages.dev)
+[![API Status](https://img.shields.io/badge/API-muninn--api.workers.dev-brightgreen.svg)](https://muninn-api.kshitiz23kumar.workers.dev/api/health)
+[![Cloudflare Workers](https://img.shields.io/badge/Runtime-Cloudflare%20Workers-f38020.svg)](https://workers.cloudflare.com)
+[![Next.js 15](https://img.shields.io/badge/Frontend-Next.js%2015-black.svg)](https://nextjs.org)
+[![Capacitor Android](https://img.shields.io/badge/Android-Tablet%20APK-3ddc84.svg)](https://github.com/Erebuzzz/Muninn/releases)
+[![AssemblyAI](https://img.shields.io/badge/Speech-AssemblyAI%2024kHz-0052ff.svg)](https://www.assemblyai.com)
+
+---
+
+### About Muninn
+Muninn is inspired by one of Odin's two sacred raven messengers from Norse mythology, whose name translates from Old Norse to *"memory"* or *"mind"*. It serves as an active cognitive companion that captures technical engineering discussions (via real-time 24kHz AudioWorklet stream or 1-tap quick voice memos), isolates verifiable ground-truth claims with turn-by-turn timestamps, weaves a recursive relational knowledge graph, and proactively resurfaces unfinished work, unblocked tasks, and conflicting decisions.
+
+- **Live Production Website**: [https://muninn-nmk.pages.dev](https://muninn-nmk.pages.dev)
+- **Cloudflare Edge API**: [https://muninn-api.kshitiz23kumar.workers.dev](https://muninn-api.kshitiz23kumar.workers.dev)
+- **Web Application & Interactive Codex**: Ephemeral guest sandbox in session storage; persistent cloud retention upon optional sign-in.
+- **Android Tablet APK**: Local-first hardware persistence via Android SharedPreferences; zero mandatory cloud account.
+- **Repository Topics**: `memory-system`, `audio-transcription`, `assemblyai`, `hono`, `nextjs15`, `cloudflare-workers`, `android`, `local-first`, `proactive-resurfacing`, `ai-companion`, `knowledge-graph`
+- **Releases & APK Downloads**: [Muninn GitHub Releases](https://github.com/Erebuzzz/Muninn/releases)
+- **Interactive Documentation**: Dedicated codex portal at [https://muninn-nmk.pages.dev/docs](https://muninn-nmk.pages.dev/docs)
+- **Security Policy**: [SECURITY.md](SECURITY.md)
+- **Privacy Policy**: [PRIVACY.md](PRIVACY.md)
+- **License**: [MIT License](LICENSE)
 
 ---
 
@@ -289,54 +313,54 @@ Muninn adheres to a strict privacy-first model across all devices:
 
 ---
 
-## 10. Agent Brain Architecture Graph
+### 10. Subsystem & Component Topology
 
-The agent workflow and dependency graph is maintained in Mermaid format inside the `brain/graph.mermaid` file. It records every architectural decision, active subsystem, and service relationship:
+The system topology maps all service contracts, runtime isolation boundaries, and data pipelines across the monorepo:
 
 ```mermaid
 flowchart TD
-    Init[Project: Muninn Living Memory] --> Spec[Spec: Opt-in, Provenance, Living Memory]
-    Spec --> DB[Neon PostgreSQL with pgvector provisioned]
-    Spec --> Monorepo[Monorepo Architecture: Web, Cloudflare Worker, Python Backend, Android APK]
+    Init["Project: Muninn Living Memory"] --> Spec["Spec: Opt-in, Provenance, Living Memory"]
+    Spec --> DB["Neon PostgreSQL with pgvector provisioned"]
+    Spec --> Monorepo["Monorepo Architecture: Web, Cloudflare Worker, Python Backend, Android APK"]
     
-    DB --> SchemaInit[Schema Applied: users with password_hash/salt, conversations, speakers, entities, claims, relationships, task_state, resurfacing_events]
+    DB --> SchemaInit["Schema Applied: users, conversations, speakers, entities, claims, relationships, task_state, resurfacing_events"]
     
-    Monorepo --> Worker[Primary Backend: Cloudflare Workers + Hono /worker]
-    Monorepo --> Backend[Alternative Backend: FastAPI /backend]
-    Monorepo --> Frontend[Next.js 15 Frontend /frontend]
-    Monorepo --> Android[Capacitor Android Shell /frontend/android]
+    Monorepo --> Worker["Primary Backend: Cloudflare Workers + Hono (/worker)"]
+    Monorepo --> Backend["Alternative Backend: FastAPI (/backend)"]
+    Monorepo --> Frontend["Next.js 15 Frontend (/frontend)"]
+    Monorepo --> Android["Capacitor Android Shell (/frontend/android)"]
 
-    Worker --> W_Driver[@neondatabase/serverless: Zero cold-start HTTP driver]
-    Worker --> W_Auth[Auth Service: Web Crypto PBKDF2 100k iters + Hono JWT HS256]
-    Worker --> W_LLMGateway[LLM Gateway: strict json_schema, json-repair, cache_control, fallbacks: gemini-2.5-flash & claude-haiku]
-    Worker --> W_SyncSTT[Sync STT Service: POST sync.assemblyai.com for sub-second quick voice notes]
-    Worker --> W_Services[services: AuthService, VoiceAgentService, ExtractionService, ResurfacingService, ContextEngineService, SyncSTTService]
-    Worker --> W_Routes[routes: auth, sessions with quick-note, claims, review, graph, resurfacing, chat]
-    Worker --> W_Verified[Verified: Typecheck clean, dry-run bundle 91 KiB, live endpoints on port 8000]
+    Worker --> W_Driver["@neondatabase/serverless: Zero cold-start HTTP driver"]
+    Worker --> W_Auth["Auth Service: Web Crypto PBKDF2 100k iters + Hono JWT HS256"]
+    Worker --> W_LLMGateway["LLM Gateway: strict json_schema, json-repair, fallbacks"]
+    Worker --> W_SyncSTT["Sync STT Service: POST sync.assemblyai.com for sub-second voice notes"]
+    Worker --> W_Services["services: AuthService, VoiceAgentService, ExtractionService, ResurfacingService"]
+    Worker --> W_Routes["routes: auth, sessions, claims, review, graph, resurfacing, chat"]
+    Worker --> W_Verified["Verified: Clean bundle, sub-millisecond edge execution"]
 
-    Backend --> BE_DB[app/db: async SQLAlchemy models and session with SSL]
-    Backend --> BE_Services[app/services: VoiceAgent, Extraction, Resurfacing, ContextEngine]
-    Backend --> BE_API[app/api: sessions, claims, review, graph, resurfacing, chat]
-    Backend --> BE_Tests[tests: test_extraction, test_resurfacing: 4/4 passing]
+    Backend --> BE_DB["app/db: async SQLAlchemy models and session with SSL"]
+    Backend --> BE_Services["app/services: VoiceAgent, Extraction, Resurfacing, ContextEngine"]
+    Backend --> BE_API["app/api: sessions, claims, review, graph, resurfacing, chat"]
+    Backend --> BE_Tests["tests: test_extraction, test_resurfacing: passing"]
 
-    Frontend --> FE_Auth[components/auth: AuthModal, AuthHeaderButton, AuthProvider with Capacitor Preferences]
-    Frontend --> FE_Audio[public/pcm-processor.js: 24kHz AudioWorklet]
-    Frontend --> FE_Studio[components/studio: VoiceStudio with Live Session & Quick Memo Sync STT]
-    Frontend --> FE_Resurfacing[components/resurfacing: ResurfacingFeed and Card]
-    Frontend --> FE_Review[components/review: SensitivityModal: default discard]
-    Frontend --> FE_Provenance[components/provenance: ClaimInspector with CTE chains]
-    Frontend --> FE_Chat[components/chat: MemoryChat with ground-truth citations]
-    Frontend --> FE_Graph[components/graph: MemoryGraphView interactive explorer]
-    Frontend --> FE_Sound[lib/soundfx.ts: Web Audio API tactile cues]
-    Frontend --> FE_Storage[lib/storage.ts: Local-First Drafts, Offline Queue, and Auth Token Store]
+    Frontend --> FE_Auth["components/auth: AuthModal, AuthHeaderButton, AuthProvider"]
+    Frontend --> FE_Audio["public/pcm-processor.js: 24kHz AudioWorklet"]
+    Frontend --> FE_Studio["components/studio: VoiceStudio with Live Session & Quick Memo"]
+    Frontend --> FE_Resurfacing["components/resurfacing: ResurfacingFeed and Card"]
+    Frontend --> FE_Review["components/review: SensitivityModal: default discard"]
+    Frontend --> FE_Provenance["components/provenance: ClaimInspector with CTE chains"]
+    Frontend --> FE_Chat["components/chat: MemoryChat with ground-truth citations"]
+    Frontend --> FE_Graph["components/graph: MemoryGraphView interactive explorer"]
+    Frontend --> FE_Sound["lib/soundfx.ts: Web Audio API tactile cues"]
+    Frontend --> FE_Storage["lib/storage.ts: Local-First Drafts, Offline Queue, and Auth Token Store"]
 
-    Android --> AND_Service[RecordingForegroundService: Android Foreground Service]
-    Android --> AND_Plugin[ForegroundRecordingPlugin: Capacitor Native Bridge]
-    Android --> AND_Prefs[Capacitor Preferences Plugin: Android SharedPreferences Token Retention]
-    Android --> AND_Notification[Ongoing Notification: Low-Memory Killer Protection]
-    Android --> AND_AVD[AVD Emulator: MuninnTablet Pixel Tablet on Android 34]
-    Android --> AND_Build[Gradle AssembleDebug: app-debug.apk 4.45 MB]
-    Android --> AND_Verified[AVD Live Verification: Claim Extraction, Provenance Inspector, Resurfacing Feed]
+    Android --> AND_Service["RecordingForegroundService: Android Foreground Service"]
+    Android --> AND_Plugin["ForegroundRecordingPlugin: Capacitor Native Bridge"]
+    Android --> AND_Prefs["Capacitor Preferences Plugin: Android SharedPreferences Retention"]
+    Android --> AND_Notification["Ongoing Notification: Low-Memory Killer Protection"]
+    Android --> AND_AVD["AVD Emulator: MuninnTablet Pixel Tablet on Android 34"]
+    Android --> AND_Build["Gradle AssembleDebug: app-debug.apk"]
+    Android --> AND_Verified["AVD Live Verification: Claim Extraction, Provenance Inspector"]
 
-    W_Verified --> ReadyState[Status: Monorepo Enhanced with Self-Contained Auth, LLM Gateway Resilience & Sync STT]
+    W_Verified --> ReadyState["Status: Monorepo Enhanced with Self-Contained Auth & Sync STT"]
 ```

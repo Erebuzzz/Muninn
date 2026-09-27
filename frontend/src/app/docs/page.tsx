@@ -57,22 +57,13 @@ export default function DocsPage() {
       {/* Top Context Bar */}
       <div className="flex items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center gap-1.5 shadow-sm group"
-          >
-            <MythicIcon.ArrowRight size={13} className="rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-            <span>← Living Vault</span>
-          </Link>
-          <span className="text-slate-400 dark:text-slate-600 font-mono">/</span>
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-serif font-bold text-slate-900 dark:text-white">
-              Muninn Codex
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
-              ARCHITECTURAL REFERENCE
-            </span>
-          </div>
+          <RavenLogo size={22} animated={false} glow={false} />
+          <h1 className="text-sm font-serif font-bold text-slate-900 dark:text-white">
+            Muninn Codex
+          </h1>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+            ARCHITECTURAL REFERENCE
+          </span>
         </div>
 
         <a
@@ -118,17 +109,6 @@ export default function DocsPage() {
               );
             })}
           </nav>
-
-          {/* Back Pill in place of Version / License / Runtime */}
-          <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800">
-            <Link
-              href="/"
-              className="w-full py-2.5 px-3.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm group"
-            >
-              <MythicIcon.ArrowRight size={13} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
-              <span>← Living Vault</span>
-            </Link>
-          </div>
         </aside>
 
         {/* Right Main Content Area */}

@@ -14,14 +14,13 @@ export function TopNavActions() {
 
   return (
     <div className="flex items-center gap-2.5 sm:gap-3 text-xs">
-      {/* Dynamic Nav Pill: If on /docs -> Back to Living Vault; else -> Codex Docs */}
+      {/* Dynamic Nav Pill: If on /docs -> Living Vault; else -> Codex Docs */}
       {isDocs ? (
         <Link
           href="/"
-          className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center gap-1.5 shadow-sm group"
+          className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center shadow-sm"
         >
-          <MythicIcon.ArrowRight size={13} className="rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-          <span>← Living Vault</span>
+          <span>Living Vault</span>
         </Link>
       ) : (
         <Link
