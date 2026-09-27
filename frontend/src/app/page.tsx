@@ -128,16 +128,22 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-slate-900 dark:text-slate-200">
-                {isNative ? "Tablet Storage: Hardware Local-First" : "Web Guest Sandbox: Ephemeral Memory"}
+                {user
+                  ? `Authenticated Vault: ${user.email}`
+                  : isNative
+                  ? "Tablet Storage: Hardware Local-First"
+                  : "Curated Sample Vault: Ephemeral Guest Sandbox"}
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-500/30">
-                {isNative ? "Device Local" : "Temporary Tab"}
+                {user ? "Cloud Synced" : isNative ? "Device Local" : "Curated Demo"}
               </span>
             </div>
             <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-              {isNative
+              {user
+                ? "Your private engineering vault is synchronized to encrypted cloud retention."
+                : isNative
                 ? "Captured discussions stay safely on this device. Sign-in is optional for cross-device cloud sync."
-                : "Stored in memory session. Zero server persistence until you sign in."}
+                : "Curated engineering dialogues loaded. Captured sessions operate in ephemeral memory until you sign in."}
             </p>
           </div>
         </div>
@@ -255,6 +261,11 @@ export default function DashboardPage() {
                   <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
                     ({sessions.length})
                   </span>
+                  {!user && (
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+                      CURATED SAMPLE VAULT
+                    </span>
+                  )}
                 </div>
                 <span className="text-[9px] font-mono text-orange-600 dark:text-orange-400 tracking-wider">
                   TEMPORAL LOG
