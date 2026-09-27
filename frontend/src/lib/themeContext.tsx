@@ -3,21 +3,25 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type ThemeMode = "nyx" | "helios";
+export type TransitionPhase = "sunrise" | "sunset" | null;
 
 interface ThemeContextType {
   theme: ThemeMode;
+  transitionPhase: TransitionPhase;
   setTheme: (mode: ThemeMode) => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: "nyx",
+  transitionPhase: null,
   setTheme: () => {},
   toggleTheme: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeMode>("nyx");
+  const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -49,12 +53,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const toggleTheme = () => {
+    if (transitionPhase) return; // Prevent double trigger
     const next = theme === "nyx" ? "helios" : "nyx";
-    setTheme(next);
+    const phase: TransitionPhase = next === "helios" ? "sunrise" : "sunset";
+
+    setTransitionPhase(phase);
+
+    // Coordinate DOM class swap right at the peak celestial horizon crest (320ms)
+    setTimeout(() => {
+      setThemeState(next);
+      localStorage.setItem("muninn_theme", next);
+      applyTheme(next);
+    }, 320);
+
+    // End transition phase once atmosphere clears
+    setTimeout(() => {
+      setTransitionPhase(null);
+    }, 980);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, transitionPhase, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

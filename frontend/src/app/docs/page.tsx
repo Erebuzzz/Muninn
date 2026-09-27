@@ -53,93 +53,86 @@ export default function DocsPage() {
   };
 
   return (
-    <div className="relative min-h-screen text-slate-800 dark:text-slate-200">
-      {/* Top Banner Navigation */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 group">
-              <RavenLogo size={32} animated={false} glow={true} />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-serif font-bold text-sm tracking-wide text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition">
-                    MUNINN
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
-                    CODEX
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 hidden sm:inline">
-                  Interactive Architectural Reference
-                </span>
-              </div>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <CelestialOrb size={26} />
-
-            <a
-              href="https://github.com/Erebuzzz/Muninn"
-              target="_blank"
-              rel="noreferrer"
-              className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-orange-500/40 text-xs font-mono text-slate-700 dark:text-slate-300 transition flex items-center gap-2 shadow-sm"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-              </svg>
-              <span className="hidden sm:inline">GitHub Repository</span>
-            </a>
-
-            <Link
-              href="/"
-              className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center gap-1.5 shadow"
-            >
-              <MythicIcon.ArrowRight size={13} className="rotate-180" />
-              <span>Living Vault</span>
-            </Link>
+    <div className="relative space-y-6 text-slate-800 dark:text-slate-200 pb-12">
+      {/* Top Context Bar */}
+      <div className="flex items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center gap-1.5 shadow-sm group"
+          >
+            <MythicIcon.ArrowRight size={13} className="rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+            <span>← Living Vault</span>
+          </Link>
+          <span className="text-slate-400 dark:text-slate-600 font-mono">/</span>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-serif font-bold text-slate-900 dark:text-white">
+              Muninn Codex
+            </h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+              ARCHITECTURAL REFERENCE
+            </span>
           </div>
         </div>
-      </header>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Navigation Sidebar */}
-          <aside className="lg:col-span-3 sticky top-24 space-y-2 glass-window rounded-2xl p-4 shadow-xl border border-slate-200/80 dark:border-slate-800">
-            <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest px-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+        <a
+          href="https://github.com/Erebuzzz/Muninn"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition flex items-center gap-1.5"
+        >
+          <span>github.com/Erebuzzz/Muninn</span>
+          <MythicIcon.External size={12} />
+        </a>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Navigation Sidebar */}
+        <aside className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-20 space-y-3 glass-window rounded-2xl p-4 shadow-xl border border-slate-200/80 dark:border-slate-800">
+          <div className="flex items-center justify-between px-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+            <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-slate-200 uppercase tracking-widest">
               Codex Index
-            </div>
-            <nav className="space-y-1">
-              {sections.map((sec) => {
-                const IconComponent = MythicIcon[sec.icon];
-                const isActive = activeSection === sec.id;
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setActiveSection(sec.id)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition flex items-center gap-2.5 ${
-                      isActive
-                        ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 font-semibold border border-orange-500/30"
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    <IconComponent size={14} className={isActive ? "text-orange-500" : "text-slate-400"} />
-                    <span className="truncate">{sec.title}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            </span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+              9 SECTIONS
+            </span>
+          </div>
 
-            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 text-[10px] font-mono text-slate-500 space-y-1">
-              <div>Version: 1.0.0 Mythic Release</div>
-              <div>License: MIT Open Source</div>
-              <div>Runtime: Edge + SQLite + WebAudio</div>
-            </div>
-          </aside>
+          <nav className="space-y-1">
+            {sections.map((sec) => {
+              const IconComponent = MythicIcon[sec.icon];
+              const isActive = activeSection === sec.id;
+              return (
+                <button
+                  key={sec.id}
+                  onClick={() => setActiveSection(sec.id)}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition flex items-center gap-2.5 ${
+                    isActive
+                      ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 font-semibold border border-orange-500/30 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/80 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <IconComponent size={14} className={isActive ? "text-orange-500" : "text-slate-400"} />
+                  <span className="truncate">{sec.title}</span>
+                </button>
+              );
+            })}
+          </nav>
 
-          {/* Right Main Content Area */}
-          <main className="lg:col-span-9 space-y-8">
+          {/* Back Pill in place of Version / License / Runtime */}
+          <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800">
+            <Link
+              href="/"
+              className="w-full py-2.5 px-3.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm group"
+            >
+              <MythicIcon.ArrowRight size={13} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
+              <span>← Living Vault</span>
+            </Link>
+          </div>
+        </aside>
+
+        {/* Right Main Content Area */}
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6">
             {/* Section 1: System Philosophy */}
             {activeSection === "overview" && (
               <article className="glass-window rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200/80 dark:border-slate-800">
@@ -629,12 +622,11 @@ SELECT * FROM claim_hierarchy ORDER BY depth;`}
                       )}
                     </div>
                   ))}
-                </div>
-              </article>
-            )}
-          </main>
-        </div>
+            </div>
+          </article>
+        )}
       </div>
     </div>
+  </div>
   );
 }

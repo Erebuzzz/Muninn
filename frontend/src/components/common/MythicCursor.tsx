@@ -2,8 +2,12 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { animate } from "animejs";
+import { useTheme } from "@/lib/themeContext";
 
 export function MythicCursor() {
+  const { theme } = useTheme();
+  const isSun = theme === "helios";
+
   const dotRef = useRef<HTMLDivElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -62,7 +66,7 @@ export function MythicCursor() {
     document.addEventListener("mouseleave", onMouseLeave);
     document.addEventListener("mouseenter", onMouseEnter);
 
-    // Smooth trailing physics loop for the starlight ring
+    // Smooth trailing physics loop for the celestial ring
     let animationFrameId: number;
     const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor;
 
@@ -71,7 +75,7 @@ export function MythicCursor() {
       ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.22);
 
       if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${ringPos.current.x}px, ${ringPos.current.y}px, 0) scale(${isHovered ? 1.4 : 1})`;
+        ringRef.current.style.transform = `translate3d(${ringPos.current.x}px, ${ringPos.current.y}px, 0)`;
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -92,26 +96,111 @@ export function MythicCursor() {
 
   return (
     <>
-      {/* Precision Central Reticle Dot */}
+      {/* Central Reticle Nucleus: Amber Sunfire Dot (Helios) vs Pearl Starlight Dot (Nyx) */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999] -ml-1 -mt-1 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_#f97316] transition-transform duration-75"
+        className={`fixed top-0 left-0 pointer-events-none z-[9999] -ml-1 -mt-1 w-2 h-2 rounded-full transition-colors duration-300 ${
+          isSun
+            ? "bg-amber-500 shadow-[0_0_8px_#f59e0b]"
+            : "bg-sky-200 shadow-[0_0_8px_#38bdf8]"
+        }`}
         style={{ willChange: "transform" }}
       />
 
-      {/* Trailing Mythic Starlight Ring & Faceted Reticle Crosshairs */}
+      {/* Trailing Celestial Ring: Radiant Sun (Helios) vs Crescent Moon (Nyx) */}
       <div
         ref={ringRef}
-        className={`fixed top-0 left-0 pointer-events-none z-[9998] -ml-4 -mt-4 w-8 h-8 rounded-full border border-orange-500/50 shadow-[0_0_12px_rgba(249,115,22,0.3)] transition-[border-color,background-color] duration-200 flex items-center justify-center ${
-          isHovered ? "bg-orange-500/10 border-orange-400" : "bg-transparent"
+        className={`fixed top-0 left-0 pointer-events-none z-[9998] -ml-5 -mt-5 w-10 h-10 rounded-full transition-[opacity] duration-200 flex items-center justify-center ${
+          isSun
+            ? "drop-shadow-[0_0_12px_rgba(249,115,22,0.4)]"
+            : "drop-shadow-[0_0_12px_rgba(129,140,248,0.4)]"
         }`}
         style={{ willChange: "transform" }}
       >
-        {/* Faceted Geometric Corner Crosshair Notches */}
-        <div className="absolute -top-1 w-1 h-0.5 bg-orange-400/80" />
-        <div className="absolute -bottom-1 w-1 h-0.5 bg-orange-400/80" />
-        <div className="absolute -left-1 w-0.5 h-1 bg-orange-400/80" />
-        <div className="absolute -right-1 w-0.5 h-1 bg-orange-400/80" />
+        {isSun ? (
+          /* Radiant Sun Reticle for Helios Mode */
+          <svg
+            viewBox="0 0 40 40"
+            className={`w-full h-full transition-transform duration-300 ${isHovered ? "scale-125 rotate-45" : "scale-100 rotate-0"}`}
+          >
+            {/* Outer Solar Orbit Ring */}
+            <circle
+              cx="20"
+              cy="20"
+              r="10"
+              fill="none"
+              stroke="#f97316"
+              strokeWidth="1.2"
+              strokeOpacity="0.75"
+              strokeDasharray="3 2"
+            />
+            {/* Inner Sunfire Core */}
+            <circle
+              cx="20"
+              cy="20"
+              r="6.5"
+              fill="#f59e0b"
+              fillOpacity="0.25"
+              stroke="#fbbf24"
+              strokeWidth="1"
+            />
+            {/* 8 Solar Corona Radiant Spikes */}
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+              const rad = (deg * Math.PI) / 180;
+              const x1 = 20 + 11 * Math.cos(rad);
+              const y1 = 20 + 11 * Math.sin(rad);
+              const x2 = 20 + (deg % 90 === 0 ? 17 : 14) * Math.cos(rad);
+              const y2 = 20 + (deg % 90 === 0 ? 17 : 14) * Math.sin(rad);
+              return (
+                <line
+                  key={deg}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="#f97316"
+                  strokeWidth={deg % 90 === 0 ? 1.5 : 1.1}
+                  strokeLinecap="round"
+                />
+              );
+            })}
+          </svg>
+        ) : (
+          /* Celestial Moon Reticle for Nyx Mode */
+          <svg
+            viewBox="0 0 40 40"
+            className={`w-full h-full transition-transform duration-300 ${isHovered ? "scale-125" : "scale-100"}`}
+          >
+            {/* Starlight Constellation Orbit Ring */}
+            <circle
+              cx="20"
+              cy="20"
+              r="12"
+              fill="none"
+              stroke="#818cf8"
+              strokeWidth="1"
+              strokeOpacity="0.55"
+              strokeDasharray="2 3"
+            />
+            {/* Crescent Moon Arc */}
+            <path
+              d="M 20,8 A 12,12 0 0,0 20,32 A 8.5,12 0 0,1 20,8 Z"
+              fill="#38bdf8"
+              fillOpacity="0.35"
+              stroke="#38bdf8"
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+            />
+            {/* Delicate Starlight Asterism Notches */}
+            <line x1="20" y1="4" x2="20" y2="7" stroke="#a78bfa" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="20" y1="33" x2="20" y2="36" stroke="#a78bfa" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="4" y1="20" x2="7" y2="20" stroke="#a78bfa" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="33" y1="20" x2="36" y2="20" stroke="#a78bfa" strokeWidth="1.2" strokeLinecap="round" />
+            {/* Twinkling Starlight Sparks */}
+            <circle cx="26" cy="14" r="1.1" fill="#e0e7ff" />
+            <circle cx="14" cy="25" r="0.8" fill="#c7d2fe" />
+          </svg>
+        )}
       </div>
     </>
   );
