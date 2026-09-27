@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
-import { hashPassword, verifyPassword, createAuthToken, verifyAuthToken } from "../services/auth";
+import { hashPassword, verifyPassword, createAuthToken, verifyAuthToken, getJwtSecret } from "../services/auth";
+import { rateLimiter } from "../middleware/rate-limit";
 
 export const authRouter = new Hono<AppEnv>();
 
-authRouter.post("/register", async (c) => {
+authRouter.post("/register", rateLimiter(60000, 3, "auth-register"), async (c) => {
   const body = await c.req.json<{ email?: string; password?: string; name?: string }>().catch(() => ({ email: undefined, password: undefined, name: undefined }));
   const email = (body.email || "").trim().toLowerCase();
   const password = body.password || "";
@@ -31,7 +32,7 @@ authRouter.post("/register", async (c) => {
 
   const userId = crypto.randomUUID();
   const { hash, salt } = await hashPassword(password);
-  const secret = c.env.JWT_SECRET || "muninn-jwt-secret-key-prod-2026-super-secure";
+  const secret = getJwtSecret(c.env);
 
   const rows = await sql`
     INSERT INTO users (id, email, password_hash, salt, name, created_at)
@@ -52,7 +53,7 @@ authRouter.post("/register", async (c) => {
   }, 201);
 });
 
-authRouter.post("/login", async (c) => {
+authRouter.post("/login", rateLimiter(60000, 5, "auth-login"), async (c) => {
   const body = await c.req.json<{ email?: string; password?: string }>().catch(() => ({ email: undefined, password: undefined }));
   const email = (body.email || "").trim().toLowerCase();
   const password = body.password || "";
@@ -92,7 +93,7 @@ authRouter.post("/login", async (c) => {
     return c.json({ error: "Invalid email or password" }, 401);
   }
 
-  const secret = c.env.JWT_SECRET || "muninn-jwt-secret-key-prod-2026-super-secure";
+  const secret = getJwtSecret(c.env);
   const token = await createAuthToken(user, secret);
 
   return c.json({
@@ -112,7 +113,7 @@ authRouter.get("/me", async (c) => {
   }
 
   const token = authHeader.substring(7).trim();
-  const secret = c.env.JWT_SECRET || "muninn-jwt-secret-key-prod-2026-super-secure";
+  const secret = getJwtSecret(c.env);
   const decoded = await verifyAuthToken(token, secret);
 
   if (!decoded || !decoded.sub) {

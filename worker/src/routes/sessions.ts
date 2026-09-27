@@ -5,33 +5,55 @@ import { VoiceAgentService } from "../services/voice-agent";
 import { ExtractionService } from "../services/extraction";
 import { ResurfacingService } from "../services/resurfacing";
 import { SyncSTTService } from "../services/sync-stt";
-import { getAuthUserId } from "../services/auth";
+import { getOptionalAuthUserId, requireAuthUserId } from "../services/auth";
+import { rateLimiter } from "../middleware/rate-limit";
 
 export const sessionsRouter = new Hono<AppEnv>();
 
-sessionsRouter.get("/token", async (c) => {
+/**
+ * Vends AssemblyAI Voice Agent tokens.
+ * Restricted to authenticated users to prevent upstream API quota drainage.
+ * Unauthenticated guests receive simulation tokens.
+ */
+sessionsRouter.get("/token", rateLimiter(60000, 15, "sessions-token"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
-  const expiresIn = parseInt(c.req.query("expires_in") || "300", 10);
-  const maxDuration = parseInt(c.req.query("max_duration") || "8640", 10);
+  const userId = await getOptionalAuthUserId(c);
+  const defaultUserId = c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+
+  const expiresIn = Math.min(Math.max(parseInt(c.req.query("expires_in") || "300", 10), 60), 600);
+  const maxDuration = Math.min(Math.max(parseInt(c.req.query("max_duration") || "8640", 10), 60), 10800);
+
+  // If unauthenticated guest, return safe simulation token without calling paid AssemblyAI API
+  if (userId === defaultUserId) {
+    return c.json({
+      token: "demo-simulation-token",
+      agent_id: "demo-agent-id",
+      expires_in_seconds: expiresIn,
+      max_session_duration_seconds: maxDuration,
+      mode: "simulation",
+    });
+  }
 
   const tokenInfo = await VoiceAgentService.generateToken(sql, c.env, userId, expiresIn, maxDuration);
   return c.json(tokenInfo);
 });
 
-sessionsRouter.post("/", async (c) => {
+/**
+ * Creates a new conversation session.
+ * Requires authentication.
+ */
+sessionsRouter.post("/", rateLimiter(60000, 20, "sessions-create"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const body = await c.req.json<{
-    user_id?: string;
     title?: string;
     audio_url?: string;
     raw_transcript?: any;
-  }>();
+  }>().catch(() => ({ title: undefined, audio_url: undefined, raw_transcript: undefined }));
 
-  const authUserId = await getAuthUserId(c);
-  const userId = body.user_id || authUserId;
+  const userId = await requireAuthUserId(c);
   const id = crypto.randomUUID();
-  const title = body.title || `Live Muninn Session ${new Date().toLocaleTimeString()}`;
+  const rawTitle = (body.title || "").trim();
+  const title = rawTitle.slice(0, 120) || `Live Muninn Session ${new Date().toLocaleTimeString()}`;
   const nowIso = new Date().toISOString();
 
   await sql(
@@ -52,9 +74,12 @@ sessionsRouter.post("/", async (c) => {
   });
 });
 
+/**
+ * Lists conversations for the requesting user (or default sample vault for guests).
+ */
 sessionsRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await getOptionalAuthUserId(c);
   const limit = Math.min(Math.max(parseInt(c.req.query("limit") || "20", 10), 1), 100);
   const offset = Math.max(parseInt(c.req.query("offset") || "0", 10), 0);
 
@@ -81,13 +106,19 @@ sessionsRouter.get("/", async (c) => {
   return c.json(rows);
 });
 
+/**
+ * Retrieves session detail.
+ * Enforces tenant isolation: user can only view their own session or the public sample vault.
+ */
 sessionsRouter.get("/:id", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const sessionId = c.req.param("id");
+  const userId = await getOptionalAuthUserId(c);
+  const defaultUserId = c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
 
   const convRows = (await sql(
-    `SELECT * FROM conversations WHERE id = $1 LIMIT 1`,
-    [sessionId]
+    `SELECT * FROM conversations WHERE id = $1 AND (user_id = $2 OR user_id = $3) LIMIT 1`,
+    [sessionId, userId, defaultUserId]
   )) as any[];
 
   if (convRows.length === 0) {
@@ -169,9 +200,15 @@ sessionsRouter.get("/:id", async (c) => {
   });
 });
 
-sessionsRouter.post("/:id/complete", async (c) => {
+/**
+ * Completes a session and triggers claim extraction.
+ * Requires authentication and verifies ownership.
+ */
+sessionsRouter.post("/:id/complete", rateLimiter(60000, 10, "sessions-complete"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const sessionId = c.req.param("id");
+  const userId = await requireAuthUserId(c);
+
   const payload = (await c.req
     .json<{
       external_session_id?: string;
@@ -185,19 +222,19 @@ sessionsRouter.post("/:id/complete", async (c) => {
   };
 
   const convRows = (await sql(
-    `SELECT * FROM conversations WHERE id = $1 LIMIT 1`,
-    [sessionId]
+    `SELECT * FROM conversations WHERE id = $1 AND user_id = $2 LIMIT 1`,
+    [sessionId, userId]
   )) as any[];
 
   if (convRows.length === 0) {
-    return c.json({ detail: "Session not found" }, 404);
+    return c.json({ detail: "Session not found or unauthorized" }, 404);
   }
   const conv = convRows[0];
   const nowIso = new Date().toISOString();
 
   let audioUrl = conv.audio_url;
   let rawTranscript = conv.raw_transcript;
-  let rawTranscriptText = payload.transcript_text || "";
+  let rawTranscriptText = (payload.transcript_text || "").slice(0, 50000);
 
   if (payload.external_session_id) {
     const remoteData = await VoiceAgentService.fetchSession(c.env, payload.external_session_id);
@@ -226,8 +263,8 @@ sessionsRouter.post("/:id/complete", async (c) => {
   await sql(
     `UPDATE conversations
      SET status = 'completed', ended_at = $1, audio_url = $2, raw_transcript = $3
-     WHERE id = $4`,
-    [nowIso, audioUrl || null, rawTranscript ? JSON.stringify(rawTranscript) : null, sessionId]
+     WHERE id = $4 AND user_id = $5`,
+    [nowIso, audioUrl || null, rawTranscript ? JSON.stringify(rawTranscript) : null, sessionId, userId]
   );
 
   if (rawTranscriptText) {
@@ -241,22 +278,29 @@ sessionsRouter.post("/:id/complete", async (c) => {
   return c.json({ status: "completed", session_id: sessionId });
 });
 
-sessionsRouter.post("/extract-raw", async (c) => {
+/**
+ * Extracts claims from raw transcript text.
+ * Requires authentication and applies payload limits.
+ */
+sessionsRouter.post("/extract-raw", rateLimiter(60000, 10, "sessions-extract"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const payload = await c.req.json<{
     transcript_text: string;
-    user_id?: string;
     title?: string;
-  }>();
+  }>().catch(() => ({ transcript_text: "", title: "" }));
 
-  if (!payload.transcript_text) {
+  if (!payload.transcript_text || payload.transcript_text.trim().length === 0) {
     return c.json({ detail: "transcript_text is required" }, 400);
   }
 
-  const authUserId = await getAuthUserId(c);
-  const userId = payload.user_id || authUserId;
+  if (payload.transcript_text.length > 50000) {
+    return c.json({ detail: "transcript_text exceeds maximum limit of 50,000 characters" }, 400);
+  }
+
+  const userId = await requireAuthUserId(c);
   const convId = crypto.randomUUID();
-  const title = payload.title || `Captured Conversation ${new Date().toLocaleTimeString()}`;
+  const rawTitle = (payload.title || "").trim();
+  const title = rawTitle.slice(0, 120) || `Captured Conversation ${new Date().toLocaleTimeString()}`;
   const nowIso = new Date().toISOString();
 
   await sql(
@@ -279,9 +323,13 @@ sessionsRouter.post("/extract-raw", async (c) => {
   });
 });
 
-sessionsRouter.post("/quick-note", async (c) => {
+/**
+ * Synchronous voice note ingestion via AssemblyAI STT + Claude extraction.
+ * Requires authentication, rate limiting, and maximum audio size validation.
+ */
+sessionsRouter.post("/quick-note", rateLimiter(60000, 6, "sessions-quicknote"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await requireAuthUserId(c);
 
   let audioBytes: ArrayBuffer;
   let mimeType = "audio/wav";
@@ -302,6 +350,11 @@ sessionsRouter.post("/quick-note", async (c) => {
 
   if (!audioBytes || audioBytes.byteLength === 0) {
     return c.json({ detail: "Audio data is empty" }, 400);
+  }
+
+  // Enforce max 15MB audio payload
+  if (audioBytes.byteLength > 15 * 1024 * 1024) {
+    return c.json({ detail: "Audio data exceeds maximum limit of 15MB" }, 400);
   }
 
   try {
@@ -335,4 +388,3 @@ sessionsRouter.post("/quick-note", async (c) => {
     return c.json({ detail: "Quick note processing failed", error: err.message }, 500);
   }
 });
-

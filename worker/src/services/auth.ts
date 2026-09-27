@@ -48,6 +48,15 @@ export async function verifyPassword(password: string, storedHash: string, store
   return result.hash === storedHash;
 }
 
+import { HTTPException } from "hono/http-exception";
+
+export function getJwtSecret(env: AppEnv["Bindings"]): string {
+  if (env.JWT_SECRET && env.JWT_SECRET.trim().length >= 16) {
+    return env.JWT_SECRET.trim();
+  }
+  return "muninn-jwt-prod-auth-secret-key-2026-strict";
+}
+
 export async function createAuthToken(
   user: { id: string; email: string; name?: string | null },
   secret: string
@@ -58,7 +67,7 @@ export async function createAuthToken(
     email: user.email,
     name: user.name || "",
     iat: now,
-    exp: now + 60 * 60 * 24 * 30,
+    exp: now + 60 * 60 * 24 * 30, // 30 days
   };
   return sign(payload, secret, "HS256");
 }
@@ -82,20 +91,49 @@ export async function verifyAuthToken(
   }
 }
 
-export async function getAuthUserId(c: Context<AppEnv>): Promise<string> {
+/**
+ * Returns the authenticated user's ID if a valid Bearer token is provided.
+ * If unauthenticated, returns the public DEFAULT_USER_ID for read-only sample vault access.
+ * NEVER accepts user_id from query parameters or headers.
+ */
+export async function getOptionalAuthUserId(c: Context<AppEnv>): Promise<string> {
   const authHeader = c.req.header("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.substring(7).trim();
-    const secret = c.env.JWT_SECRET || "muninn-jwt-secret-key-prod-2026-super-secure";
+    const secret = getJwtSecret(c.env);
     const decoded = await verifyAuthToken(token, secret);
     if (decoded?.sub) {
       return decoded.sub;
     }
   }
 
-  return (
-    c.req.query("user_id") ||
-    c.env.DEFAULT_USER_ID ||
-    "00000000-0000-0000-0000-000000000001"
-  );
+  return c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
 }
+
+// Backward compatibility alias for read endpoints
+export const getAuthUserId = getOptionalAuthUserId;
+
+/**
+ * Enforces strict authentication. Throws 401 Unauthorized if no valid Bearer token is present.
+ */
+export async function requireAuthUserId(c: Context<AppEnv>): Promise<string> {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new HTTPException(401, {
+      res: c.json({ error: "Unauthorized", message: "Authentication required: Missing Bearer token." }, 401),
+    });
+  }
+
+  const token = authHeader.substring(7).trim();
+  const secret = getJwtSecret(c.env);
+  const decoded = await verifyAuthToken(token, secret);
+
+  if (!decoded?.sub) {
+    throw new HTTPException(401, {
+      res: c.json({ error: "Unauthorized", message: "Authentication required: Invalid or expired token." }, 401),
+    });
+  }
+
+  return decoded.sub;
+}
+

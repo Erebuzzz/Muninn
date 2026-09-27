@@ -2,30 +2,53 @@ import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
 import { ContextEngineService } from "../services/context-engine";
-import { getAuthUserId } from "../services/auth";
+import { getOptionalAuthUserId } from "../services/auth";
+import { rateLimiter } from "../middleware/rate-limit";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const chatRouter = new Hono<AppEnv>();
 
-chatRouter.post("/", async (c) => {
+// 20 requests per minute per IP for LLM context chat
+chatRouter.post("/", rateLimiter(60000, 20, "chat"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const body = await c.req.json<{
-    query: string;
+  let body: {
+    query?: string;
     conversation_id?: string;
     max_citations?: number;
-  }>();
+  };
 
-  if (!body.query) {
-    return c.json({ detail: "query is required" }, 400);
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Bad Request", message: "Invalid JSON body" }, 400);
   }
 
-  const userId = await getAuthUserId(c);
-  const maxCitations = body.max_citations || 5;
+  if (!body.query || typeof body.query !== "string" || body.query.trim().length === 0) {
+    return c.json({ error: "Bad Request", message: "query is required" }, 400);
+  }
+
+  const query = body.query.trim();
+  if (query.length > 1000) {
+    return c.json({ error: "Bad Request", message: "query must not exceed 1000 characters" }, 400);
+  }
+
+  if (body.conversation_id && !UUID_REGEX.test(body.conversation_id)) {
+    return c.json({ error: "Bad Request", message: "Invalid conversation_id format" }, 400);
+  }
+
+  let maxCitations = 5;
+  if (typeof body.max_citations === "number" && !isNaN(body.max_citations)) {
+    maxCitations = Math.max(1, Math.min(20, Math.floor(body.max_citations)));
+  }
+
+  const userId = await getOptionalAuthUserId(c);
 
   const result = await ContextEngineService.answerChatQuery(
     sql,
     c.env,
     userId,
-    body.query,
+    query,
     body.conversation_id,
     maxCitations
   );
