@@ -131,7 +131,7 @@ export default function DashboardPage() {
                 {user
                   ? `Authenticated Vault: ${user.email}`
                   : isNative
-                  ? "Tablet Storage: Hardware Local-First"
+                  ? "Device Storage: Hardware Local-First"
                   : "Curated Sample Vault: Ephemeral Guest Sandbox"}
               </span>
               <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-900 text-sky-300 border border-sky-500/30">

@@ -264,7 +264,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                   </div>
                   <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-emerald-400 block">Mobile APK</span>
-                    <span className="text-slate-300">Capacitor 8 Android Tablet, Hardware Local-First</span>
+                    <span className="text-slate-300">Capacitor 8 Android Mobile & Tablet (Hardware Local-First)</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-purple-400 block">Voice Engine</span>

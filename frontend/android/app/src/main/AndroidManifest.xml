@@ -11,6 +11,15 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Universal Handheld Support: Phones and Tablets across all screen sizes and pixel densities -->
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:anyDensity="true"
+        android:resizeable="true" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

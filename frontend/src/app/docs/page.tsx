@@ -253,7 +253,7 @@ export default function DocsPage() {
                       End-User Capture & Operation Guide
                     </h2>
                     <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
-                      How to interact with Muninn across desktop and tablet
+                      How to interact with Muninn across desktop, tablet, and mobile
                     </p>
                   </div>
                 </div>
@@ -494,7 +494,7 @@ SELECT * FROM claim_hierarchy ORDER BY depth;`}
                   <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-3">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        Android Tablet APK
+                        Android Mobile & Tablet APK
                       </span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                         LOCAL HARDWARE

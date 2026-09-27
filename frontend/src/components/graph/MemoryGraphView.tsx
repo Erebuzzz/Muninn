@@ -163,6 +163,28 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
     setIsPanning(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsPanning(true);
+      setStartPan({
+        x: e.touches[0].clientX - panOffset.x,
+        y: e.touches[0].clientY - panOffset.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPanning || e.touches.length !== 1) return;
+    setPanOffset({
+      x: e.touches[0].clientX - startPan.x,
+      y: e.touches[0].clientY - startPan.y,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+  };
+
   const handleZoom = (delta: number) => {
     setZoomLevel((prev) => Math.max(0.6, Math.min(2.0, prev + delta)));
   };
@@ -256,6 +278,9 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           className="relative w-full h-[460px] my-3 rounded-2xl bg-slate-950/90 border border-slate-800/80 overflow-hidden cursor-grab active:cursor-grabbing select-none"
         >
           {/* Deep Void Cosmic Galaxy Background */}

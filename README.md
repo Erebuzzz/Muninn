@@ -7,7 +7,7 @@
 [![API Status](https://img.shields.io/badge/API-muninn--api.workers.dev-brightgreen.svg)](https://muninn-api.kshitiz23kumar.workers.dev/api/health)
 [![Cloudflare Workers](https://img.shields.io/badge/Runtime-Cloudflare%20Workers-f38020.svg)](https://workers.cloudflare.com)
 [![Next.js 15](https://img.shields.io/badge/Frontend-Next.js%2015-black.svg)](https://nextjs.org)
-[![Capacitor Android](https://img.shields.io/badge/Android-Tablet%20APK-3ddc84.svg)](https://github.com/Erebuzzz/Muninn/releases)
+[![Capacitor Android](https://img.shields.io/badge/Android-Mobile%20%26%20Tablet%20APK-3ddc84.svg)](https://github.com/Erebuzzz/Muninn/releases)
 [![AssemblyAI](https://img.shields.io/badge/Speech-AssemblyAI%2024kHz-0052ff.svg)](https://www.assemblyai.com)
 
 ---
@@ -18,7 +18,7 @@ Muninn is inspired by one of Odin's two sacred raven messengers from Norse mytho
 - **Live Production Website**: [https://muninn-nmk.pages.dev](https://muninn-nmk.pages.dev)
 - **Cloudflare Edge API**: [https://muninn-api.kshitiz23kumar.workers.dev](https://muninn-api.kshitiz23kumar.workers.dev)
 - **Web Application & Interactive Codex**: Ephemeral guest sandbox in session storage; persistent cloud retention upon optional sign-in.
-- **Android Tablet APK**: Local-first hardware persistence via Android SharedPreferences; zero mandatory cloud account.
+- **Android Mobile & Tablet APK**: Local-first hardware persistence via Android SharedPreferences; zero mandatory cloud account.
 - **Repository Topics**: `memory-system`, `audio-transcription`, `assemblyai`, `hono`, `nextjs15`, `cloudflare-workers`, `android`, `local-first`, `proactive-resurfacing`, `ai-companion`, `knowledge-graph`
 - **Releases & APK Downloads**: [Muninn GitHub Releases](https://github.com/Erebuzzz/Muninn/releases)
 - **Interactive Documentation**: Dedicated codex portal at [https://muninn-nmk.pages.dev/docs](https://muninn-nmk.pages.dev/docs)
@@ -295,7 +295,7 @@ Muninn adheres to a strict privacy-first model across all devices:
 
 ### Mobile & Tablet Android APK (Local-First Storage)
 - Sign-in is 100% optional on native Android hardware.
-- Captured sessions, claims, and graphs are saved directly to local flash storage on your tablet (`@capacitor/preferences` / Android `SharedPreferences`).
+- Captured sessions, claims, and graphs are saved directly to local flash storage on your mobile or tablet device (`@capacitor/preferences` / Android `SharedPreferences`).
 - Data is retained locally across app restarts, system reboots, and offline states without requiring any cloud account.
 - If you subsequently choose to sign in, your local records can synchronize back to your personal cloud vault.
 
