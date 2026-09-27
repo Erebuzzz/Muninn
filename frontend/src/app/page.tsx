@@ -14,6 +14,7 @@ import { localStore } from "@/lib/storage";
 import { PrivacyPolicyModal } from "@/components/privacy/PrivacyPolicyModal";
 import { DocsModal } from "@/components/docs/DocsModal";
 import { RavenLogo } from "@/components/brand/RavenLogo";
+import { CelestialOrb } from "@/components/brand/CelestialOrb";
 import { initMythicDust, elasticRecoil } from "@/lib/animations";
 
 export default function DashboardPage() {
@@ -48,8 +49,8 @@ export default function DashboardPage() {
 
       const pending = await api.getPendingReview();
       setPendingCount(pending.length);
-    } catch (e) {
-      console.error("Dashboard data load error:", e);
+    } catch {
+      // Graceful error handling
     }
   };
 
@@ -72,20 +73,20 @@ export default function DashboardPage() {
       <PrivacyPolicyModal isOpen={privacyModalOpen} onClose={() => setPrivacyModalOpen(false)} />
       <DocsModal isOpen={docsModalOpen} onClose={() => setDocsModalOpen(false)} />
 
-      {/* Hero / Atmospheric Title Section */}
-      <div className="relative z-10 rounded-2xl bg-gradient-to-b from-slate-900/80 via-slate-950/90 to-slate-950/80 border border-slate-800/80 p-6 sm:p-8 backdrop-blur-xl shadow-2xl overflow-hidden">
-        {/* Subtle Norse Knotwork Horizon Accent */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500/20 via-sky-400/40 to-amber-500/20" />
+      {/* Hero / Atmospheric Stained Glass Window Banner */}
+      <div className="glass-window relative z-10 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl overflow-hidden">
+        {/* Sun Orange & Sky Caustic Horizon Accent */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-orange-500/30 via-sky-400/50 to-orange-500/30" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-500/30 text-[11px] font-mono text-amber-300 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-              <span>MUNINN • ODIN&apos;S LIVING MIND • ARCHITECTURE v2.0</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-orange-500/30 text-[11px] font-mono text-orange-400 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
+              <span>MUNINN • ODIN&apos;S LIVING MIND • SOVEREIGN COGNITION</span>
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
               You decide what gets heard. <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-sky-300">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-200 to-sky-300">
                 We decide what is worth remembering.
               </span>
             </h1>
@@ -113,7 +114,7 @@ export default function DashboardPage() {
                 elasticRecoil(e.currentTarget);
                 loginDemo();
               }}
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-mono font-semibold transition flex items-center gap-2 shadow-lg shadow-amber-500/10"
+              className="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 text-xs font-mono font-semibold transition flex items-center gap-2 shadow-lg shadow-orange-500/20"
             >
               <RavenLogo size={16} animated={false} glow={false} />
               Explore Sample Vault
@@ -123,7 +124,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Storage & Privacy Status Bar */}
-      <div className="relative z-10 rounded-xl bg-slate-950/80 border border-slate-800/80 p-4 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <div className="glass-window relative z-10 rounded-xl p-4 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -157,7 +158,7 @@ export default function DashboardPage() {
           {!user && (
             <button
               onClick={openAuthModal}
-              className="px-3.5 py-1.5 text-xs font-mono font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition"
+              className="px-3.5 py-1.5 text-xs font-mono font-semibold text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg transition"
             >
               Sign In (Optional)
             </button>
@@ -165,9 +166,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Telemetry Overview Bar */}
+      {/* Telemetry Overview Bar - Frosted Glass Panels */}
       <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+        <div className="glass-window rounded-2xl p-4 shadow-lg">
           <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Total Sessions
           </div>
@@ -179,11 +180,11 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+        <div className="glass-window rounded-2xl p-4 shadow-lg">
           <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Crystallized Claims
           </div>
-          <div className="text-xl font-bold font-mono text-amber-400 mt-1">
+          <div className="text-xl font-bold font-mono text-orange-400 mt-1">
             {claimsCount}
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
@@ -191,7 +192,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+        <div className="glass-window rounded-2xl p-4 shadow-lg">
           <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Sensitivity Gate
           </div>
@@ -217,7 +218,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-lg">
+        <div className="glass-window rounded-2xl p-4 shadow-lg">
           <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
             Memory Vault
           </div>
@@ -255,7 +256,7 @@ export default function DashboardPage() {
           <MemoryChat onInspectCitation={(claimId) => setInspectedClaimId(claimId)} />
 
           {/* Past Recorded Sessions List */}
-          <div className="rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-5 shadow-2xl">
+          <div className="glass-window rounded-2xl p-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3">
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
@@ -265,7 +266,7 @@ export default function DashboardPage() {
                   ({sessions.length})
                 </span>
               </div>
-              <span className="text-[9px] font-mono text-amber-400">TEMPORAL LOG</span>
+              <span className="text-[9px] font-mono text-orange-400">TEMPORAL LOG</span>
             </div>
 
             {sessions.length === 0 ? (
@@ -277,7 +278,7 @@ export default function DashboardPage() {
                 {sessions.map((sess) => (
                   <div
                     key={sess.id}
-                    className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs flex items-center justify-between hover:border-amber-500/40 transition group shadow-sm"
+                    className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs flex items-center justify-between hover:border-orange-500/40 transition group shadow-sm"
                   >
                     <div>
                       <div className="text-slate-100 font-medium">
@@ -320,7 +321,7 @@ export default function DashboardPage() {
 
       {/* Floating Tactical Bottom Dock */}
       <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
-        <div className="pointer-events-auto bg-slate-950/90 border border-slate-800/90 backdrop-blur-xl px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4">
+        <div className="glass-window pointer-events-auto px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2 pr-3 border-r border-slate-800">
             <RavenLogo size={22} animated={false} glow={false} />
             <span className="text-[11px] font-mono font-semibold text-slate-200 hidden sm:inline">
@@ -328,9 +329,13 @@ export default function DashboardPage() {
             </span>
           </div>
 
+          <CelestialOrb size={26} />
+
+          <span className="text-slate-700">•</span>
+
           <button
             onClick={() => setDocsModalOpen(true)}
-            className="text-xs font-mono text-slate-300 hover:text-amber-300 transition flex items-center gap-1.5"
+            className="text-xs font-mono text-slate-300 hover:text-orange-400 transition flex items-center gap-1.5"
           >
             <span>Codex</span>
           </button>

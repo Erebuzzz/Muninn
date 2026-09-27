@@ -55,9 +55,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
   };
 
   return (
-    <div className="rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-5 shadow-2xl flex flex-col h-[480px] relative overflow-hidden">
+    <div className="glass-window p-5 flex flex-col h-[480px] relative overflow-hidden">
       {/* Decorative Norse Runes Horizon Line */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
 
       {/* Header */}
       <div className="border-b border-slate-800/60 pb-3 mb-3 flex items-center justify-between">
@@ -66,7 +66,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
             <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
               Ground-Truth Oracle
             </h2>
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-amber-400">
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-orange-400">
               CITATIONS VERIFIED
             </span>
           </div>
@@ -89,7 +89,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
             <div
               className={`max-w-[88%] rounded-xl p-3.5 leading-relaxed shadow-sm ${
                 m.role === "user"
-                  ? "bg-amber-500 text-slate-950 font-medium"
+                  ? "bg-orange-500 text-slate-950 font-medium"
                   : "bg-slate-900/90 border border-slate-800 text-slate-200"
               }`}
             >
@@ -98,7 +98,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
               {/* Citations */}
               {m.citations && m.citations.length > 0 && (
                 <div className="mt-3 pt-2.5 border-t border-slate-800/80 space-y-1.5">
-                  <div className="font-mono text-[9px] text-amber-400 uppercase tracking-wider font-semibold">
+                  <div className="font-mono text-[9px] text-orange-400 uppercase tracking-wider font-semibold">
                     Temporal Citations ({m.citations.length})
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -109,12 +109,12 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
                           elasticRecoil(e.currentTarget);
                           if (onInspectCitation) onInspectCitation(c.claim_id);
                         }}
-                        className="text-left p-2 rounded-lg bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/40 transition flex items-center justify-between group"
+                        className="text-left p-2 rounded-lg bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 hover:border-orange-500/40 transition flex items-center justify-between group"
                       >
                         <span className="text-[11px] text-slate-300 truncate max-w-[260px]">
                           &ldquo;{c.claim_text}&rdquo;
                         </span>
-                        <span className="font-mono text-[9px] text-amber-400/80 group-hover:text-amber-300 shrink-0 ml-2">
+                        <span className="font-mono text-[9px] text-orange-400/80 group-hover:text-orange-300 shrink-0 ml-2">
                           [Inspect] →
                         </span>
                       </button>
@@ -127,7 +127,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
         ))}
         {loading && (
           <div className="flex items-center gap-2 text-xs text-slate-400 font-mono italic">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping" />
             Traversing relational memory graph...
           </div>
         )}
@@ -140,13 +140,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ask: Why did we pause enclosure fabrication? What is Alex working on?"
-          className="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition font-sans"
+          className="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 transition font-sans"
         />
         <button
           type="submit"
           disabled={loading || !query.trim()}
           onClick={(e) => elasticRecoil(e.currentTarget)}
-          className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold font-mono text-xs transition shadow disabled:opacity-50"
+          className="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold font-mono text-xs transition shadow disabled:opacity-50"
         >
           Ask
         </button>

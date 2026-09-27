@@ -44,7 +44,7 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
       default:
         return {
           label: "Unfinished Prior Work",
-          className: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+          className: "bg-orange-500/10 text-orange-400 border-orange-500/30",
         };
     }
   };
@@ -54,7 +54,7 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/40 rounded-xl p-4 transition-all duration-300 shadow-sm relative group hover:shadow-lg hover:shadow-amber-500/5"
+      className="bg-slate-900/90 border border-slate-800 hover:border-orange-500/40 rounded-xl p-4 transition-all duration-300 shadow-sm relative group hover:shadow-lg hover:shadow-orange-500/5"
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <span className={`text-[9.5px] font-mono px-2 py-0.5 rounded border uppercase tracking-wider font-semibold ${badge.className}`}>
@@ -94,7 +94,7 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
               elasticRecoil(e.currentTarget);
               onInspectClaim(item.subject_claim_id!);
             }}
-            className="text-amber-400 hover:text-amber-300 font-mono text-xs font-semibold transition flex items-center gap-1.5"
+            className="text-orange-400 hover:text-orange-300 font-mono text-xs font-semibold transition flex items-center gap-1.5"
           >
             Inspect Provenance
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { RavenLogo } from "@/components/brand/RavenLogo";
 import { runeCipherDecode, elasticRecoil } from "@/lib/animations";
+import { ElementalFlowGraph } from "./ElementalFlowGraph";
 
 interface DocsModalProps {
   isOpen: boolean;
@@ -37,13 +38,13 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
       <div
-        className="bg-slate-950 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl relative overflow-hidden"
+        className="glass-window bg-slate-950/95 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl relative overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="docs-title"
       >
-        {/* Top Horizon Glow */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+        {/* Top Horizon Sun Orange Glow */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
 
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-slate-800/80 flex items-center justify-between">
@@ -54,8 +55,8 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                 <h2 id="docs-title" className="text-base font-bold text-white tracking-tight">
                   Muninn Codex & Interactive Walkthrough
                 </h2>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-amber-400 border border-amber-500/30">
-                  v2.0 LIVE
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-orange-400 border border-orange-500/30">
+                  LIVING CODEX
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -81,7 +82,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
           {[
             { id: "walkthrough", label: "Interactive Simulation" },
             { id: "guide", label: "User Guide" },
-            { id: "architecture", label: "System Flow" },
+            { id: "architecture", label: "Elemental System Flow" },
             { id: "developer", label: "Developer Specs" },
           ].map((tab) => (
             <button
@@ -89,7 +90,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
               onClick={() => setActiveTab(tab.id as any)}
               className={`py-3 px-3.5 text-xs font-mono transition border-b-2 font-medium shrink-0 ${
                 activeTab === tab.id
-                  ? "border-amber-400 text-amber-300 bg-slate-900/80"
+                  ? "border-orange-500 text-orange-400 bg-slate-900/80"
                   : "border-transparent text-slate-400 hover:text-slate-200"
               }`}
             >
@@ -102,8 +103,8 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
         <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-300 leading-relaxed flex-1">
           {activeTab === "walkthrough" && (
             <div className="space-y-5">
-              <div className="p-4 rounded-xl bg-slate-900/80 border border-amber-500/30">
-                <span className="font-mono text-[10px] text-amber-400 uppercase tracking-wider block mb-1">
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-orange-500/30">
+                <span className="font-mono text-[10px] text-orange-400 uppercase tracking-wider block mb-1">
                   Guided Walkthrough Simulation
                 </span>
                 <p className="text-slate-300 text-xs">
@@ -122,7 +123,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                       onClick={() => handleRunSimStep(s.step)}
                       className={`p-2.5 rounded-lg border text-left transition font-mono ${
                         simStep === s.step
-                          ? "bg-slate-800 border-amber-500 text-amber-300 shadow"
+                          ? "bg-slate-800 border-orange-500 text-orange-300 shadow"
                           : "bg-slate-950/70 border-slate-800 text-slate-400 hover:border-slate-700"
                       }`}
                     >
@@ -135,8 +136,8 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                 {/* Simulated Runic Decoder Box */}
                 <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs shadow-inner">
                   <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2 border-b border-slate-900 pb-1">
-                    <span className="flex items-center gap-1.5 text-amber-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    <span className="flex items-center gap-1.5 text-orange-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
                       SIMULATION TERMINAL (STEP {simStep} OF 3)
                     </span>
                     <span>ELDER FUTHARK CIPHER</span>
@@ -149,7 +150,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                 <div className="flex justify-end mt-3">
                   <button
                     onClick={() => handleRunSimStep(simStep < 3 ? simStep + 1 : 1)}
-                    className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-xs font-semibold transition"
+                    className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono text-xs font-semibold transition shadow-md"
                   >
                     {simStep < 3 ? `Run Next Step (${simStep + 1} of 3) →` : "Restart Walkthrough ↺"}
                   </button>
@@ -162,7 +163,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
             <div className="space-y-4">
               <section className="space-y-2">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 rounded-full bg-orange-400" />
                   1. How to Capture Memory
                 </h3>
                 <p>
@@ -211,21 +212,19 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
           )}
 
           {activeTab === "architecture" && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-xs">
-                <div className="text-amber-400 font-semibold mb-2">MUNINN SYSTEM TOPOLOGY</div>
-                <div className="p-3 rounded bg-slate-950 border border-slate-800 text-[11px] text-slate-300 leading-loose">
-                  [AudioWorklet 24kHz / Quick Memo]<br />
-                  &nbsp;&nbsp;↓ Real-time Audio Stream<br />
-                  [AssemblyAI Voice Gateway / STT]<br />
-                  &nbsp;&nbsp;↓ Structured Turns & Diarization<br />
-                  [Hono API Backend + LLM Dissection]<br />
-                  &nbsp;&nbsp;↓ Claims, Entities, Citations<br />
-                  [Neon Postgres + Vector Embeddings]<br />
-                  &nbsp;&nbsp;↓ Topological Graph Sync<br />
-                  [Interactive Living Memory Canvas & Proactive Radar]
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-semibold text-slate-200 uppercase tracking-wider">
+                  Elemental Data Flow & Gateway Topology
+                </span>
+                <span className="font-mono text-[10px] text-orange-400">
+                  INTERACTIVE TOPOLOGY
+                </span>
               </div>
+              <p className="text-xs text-slate-400">
+                Click any elemental gateway below to inspect its data protocols, verification guarantees, and runtime isolation.
+              </p>
+              <ElementalFlowGraph />
             </div>
           )}
 
@@ -243,7 +242,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => elasticRecoil(e.currentTarget)}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold font-mono transition shrink-0 flex items-center gap-2 shadow-lg"
+                  className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 text-xs font-semibold font-mono transition shrink-0 flex items-center gap-2 shadow-lg"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
@@ -256,7 +255,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                 <span className="font-mono text-slate-400 font-semibold uppercase text-[11px]">Key Technical Specifications:</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
                   <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                    <span className="text-amber-400 block">Frontend Stack</span>
+                    <span className="text-orange-400 block">Frontend Stack</span>
                     <span className="text-slate-300">Next.js 15, Tailwind, Anime.js, Web Audio API</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">

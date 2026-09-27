@@ -330,9 +330,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   };
 
   return (
-    <div className="relative rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-xl p-6 shadow-2xl overflow-hidden">
-      {/* Decorative Norse Runes Horizon Line */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+    <div className="glass-window relative rounded-2xl p-6 shadow-2xl overflow-hidden">
+      {/* Sun Orange Decorative Horizon Line */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
 
       {/* Header and Telemetry */}
       <div className="flex items-center justify-between border-b border-slate-800/60 pb-4 mb-5">
@@ -340,7 +340,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
           <div
             className={`w-3 h-3 rounded-full transition-all duration-500 ${
               status === "listening"
-                ? "bg-amber-400 shadow-md shadow-amber-500/80 animate-ping"
+                ? "bg-orange-500 shadow-md shadow-orange-500/80 animate-ping"
                 : status === "connecting"
                 ? "bg-sky-400 animate-pulse"
                 : "bg-slate-700"
@@ -351,7 +351,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
               <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
                 Odin&apos;s Ear: Acoustic Capture
               </h2>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-amber-400">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-orange-400">
                 24kHz PCM
               </span>
             </div>
@@ -368,7 +368,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setManualInputOpen(!manualInputOpen)}
-            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-700/70 transition shadow-sm"
+            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-orange-400 border border-slate-700/70 transition shadow-sm"
           >
             {manualInputOpen ? "Close Scenario" : "Import / Seed Scenario"}
           </button>
@@ -377,10 +377,10 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
 
       {/* Manual Ingest Panel */}
       {manualInputOpen && (
-        <div className="mb-5 p-4 rounded-xl bg-slate-900/90 border border-amber-500/30 text-xs">
+        <div className="mb-5 p-4 rounded-xl bg-slate-900/90 border border-orange-500/30 text-xs">
           <div className="flex items-center justify-between mb-1">
             <span className="font-semibold text-slate-200">Ingest Conversation Transcript</span>
-            <span className="text-[10px] font-mono text-amber-400">SYNTHETIC INGESTION</span>
+            <span className="text-[10px] font-mono text-orange-400">SYNTHETIC INGESTION</span>
           </div>
           <p className="text-slate-400 mb-3 text-[11px]">
             Input meeting transcript with tagged speakers. Hypotheses, decisions, and tasks will be extracted with ground-truth citations.
@@ -389,14 +389,14 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             type="text"
             value={manualTitle}
             onChange={(e) => setManualTitle(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 mb-2.5 focus:outline-none focus:border-amber-500 text-xs font-mono"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 mb-2.5 focus:outline-none focus:border-orange-500 text-xs font-mono"
             placeholder="Conversation Title"
           />
           <textarea
             value={manualTranscript}
             onChange={(e) => setManualTranscript(e.target.value)}
             rows={5}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-200 font-mono text-[11px] mb-3 focus:outline-none focus:border-amber-500 leading-relaxed"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-200 font-mono text-[11px] mb-3 focus:outline-none focus:border-orange-500 leading-relaxed"
             placeholder="Speaker A: We noticed..."
           />
           <div className="flex justify-end gap-2">
@@ -409,7 +409,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             <button
               onClick={handleManualImport}
               disabled={status === "processing"}
-              className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50"
+              className="px-4 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50"
             >
               Crystallize Memory
             </button>
@@ -450,8 +450,8 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-800/40">
         <div className="text-[11px] font-mono text-slate-400 flex items-center gap-2">
           {isRecording ? (
-            <span className="text-amber-400 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-orange-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
               Live Stream Active (PCM 24kHz)
             </span>
           ) : isRecordingMemo ? (
@@ -514,7 +514,7 @@ function TranscriptTurnRow({ turn }: { turn: TranscriptTurn }) {
       <span
         className={`font-mono font-medium px-2 py-0.5 rounded text-[10px] shrink-0 h-fit border ${
           turn.speaker === "Muninn"
-            ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+            ? "bg-orange-500/10 text-orange-400 border-orange-500/30"
             : "bg-slate-900 text-sky-300 border-slate-800"
         }`}
       >

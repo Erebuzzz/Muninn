@@ -17,7 +17,7 @@ export function AuthHeaderButton() {
     return (
       <button
         onClick={openAuthModal}
-        className="px-3 py-1.5 text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition flex items-center gap-1.5"
+        className="px-3 py-1.5 text-xs font-medium text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg transition flex items-center gap-1.5"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -36,12 +36,12 @@ export function AuthHeaderButton() {
     <div className="relative">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#141a24] hover:bg-[#1a2230] border border-[#1e2634] text-xs text-white transition"
+        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-white transition"
       >
-        <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-[10px]">
+        <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-[10px]">
           {initial}
         </span>
-        <span className="max-w-[120px] truncate text-[#e6edf3]">
+        <span className="max-w-[120px] truncate text-slate-200">
           {displayName}
         </span>
         <svg
@@ -51,24 +51,24 @@ export function AuthHeaderButton() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className={`text-[#8b9bb4] transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+          className={`text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-[#0e1219] border border-[#1e2634] rounded-xl shadow-xl py-2 z-50 animate-fade-in">
-          <div className="px-3.5 py-2 border-b border-[#1c2330]">
+        <div className="absolute right-0 mt-2 w-56 glass-window shadow-xl py-2 z-50 animate-fade-in">
+          <div className="px-3.5 py-2 border-b border-slate-800/60">
             <p className="text-xs font-semibold text-white truncate">{displayName}</p>
-            <p className="text-[11px] text-[#8b9bb4] truncate font-mono">{user.email}</p>
+            <p className="text-[11px] text-slate-400 truncate font-mono">{user.email}</p>
           </div>
           <button
             onClick={() => {
               setDropdownOpen(false);
               openAuthModal();
             }}
-            className="w-full text-left px-3.5 py-2 text-xs text-[#8b9bb4] hover:text-white hover:bg-[#161c26] transition flex items-center gap-2"
+            className="w-full text-left px-3.5 py-2 text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-2"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

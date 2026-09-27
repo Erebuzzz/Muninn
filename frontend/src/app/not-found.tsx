@@ -28,8 +28,8 @@ export default function NotFound() {
       <div className="relative z-10 flex flex-col items-center max-w-lg">
         <RavenLogo size={72} animated={true} glow={true} className="mb-6" />
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-amber-400 mb-4 shadow">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-orange-400 mb-4 shadow">
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping" />
           <span>ERROR 404 • REALM UNMAPPED</span>
         </div>
 
@@ -46,7 +46,7 @@ export default function NotFound() {
             ref={buttonRef}
             href="/"
             onClick={(e) => elasticRecoil(buttonRef.current)}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold font-mono text-xs transition shadow-lg flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold font-mono text-xs transition shadow-lg flex items-center gap-2"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
