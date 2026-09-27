@@ -20,7 +20,7 @@ export interface OfflineSession {
   id: string;
   title: string;
   transcriptText: string;
-  turns: DraftTurn[];
+  turns?: DraftTurn[];
   createdAt: string;
 }
 

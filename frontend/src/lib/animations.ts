@@ -236,9 +236,10 @@ export function initMythicDust(canvas: HTMLCanvasElement): () => void {
   const particleCount = Math.min(36, Math.floor((width * height) / 35000));
 
   const colors = [
-    "rgba(245, 158, 11, ", // Amber Gold (Muninn Memory)
+    "rgba(249, 115, 22, ", // Sun Orange (Muninn Solar Core)
+    "rgba(139, 92, 246, ", // Violet Starlight (Nyx Night)
     "rgba(56, 189, 248, ", // Cyan Ether (Norse Cold Sky)
-    "rgba(148, 163, 184, ", // Slate Star Dust
+    "rgba(251, 146, 60, ", // Solar Flare Peach
   ];
 
   for (let i = 0; i < particleCount; i++) {

@@ -3,45 +3,80 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0d12;
-  --foreground: #e6edf3;
+  --sun-orange: #f97316;
+  --sun-orange-light: #fb923c;
+  --sun-orange-dark: #ea580c;
+  --sun-orange-glow: rgba(249, 115, 22, 0.25);
+  
+  /* Nyx (Dark Mode) defaults */
+  --bg-color: #05070c;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --glass-bg: linear-gradient(135deg, rgba(13, 19, 33, 0.72) 0%, rgba(8, 12, 22, 0.85) 100%);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-specular: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), 0 0 24px -6px rgba(139, 92, 246, 0.08);
+  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+}
+
+html.helios {
+  --bg-color: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.9) 100%);
+  --glass-border: rgba(249, 115, 22, 0.2);
+  --glass-border-specular: rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 16px 36px -10px rgba(249, 115, 22, 0.08), 0 0 24px -6px rgba(249, 115, 22, 0.06);
+  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text-main);
+  background-color: var(--bg-color);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Custom minimal scrollbar */
+/* Stained Glass Window Panel Metaphor */
+.glass-window {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-border-specular);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+}
+
+/* Light Caustic Shimmer on Glass Panes */
+.glass-window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--caustic-glow);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1117;
+  background: rgba(10, 14, 23, 0.5);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: rgba(249, 115, 22, 0.3);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e3d5b;
+  background: rgba(249, 115, 22, 0.6);
 }
 
-/* Pulse animation for live voice listening */
-@keyframes ambientGlow {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.03);
-  }
-}
-
-.animate-ambient-glow {
-  animation: ambientGlow 3s ease-in-out infinite;
+::selection {
+  background-color: rgba(249, 115, 22, 0.25);
+  color: #fdba74;
 }

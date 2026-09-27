@@ -53,9 +53,9 @@ export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData, classNa
 
         const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
         if (isActive) {
-          // Mythic gradient: Amber gold crest blending into Norse sky cyan
-          gradient.addColorStop(0, "rgba(245, 158, 11, 0.95)");
-          gradient.addColorStop(0.5, "rgba(251, 191, 36, 0.85)");
+          // Mythic gradient: Sun Orange solar crest blending into Norse sky cyan
+          gradient.addColorStop(0, "rgba(249, 115, 22, 0.95)");
+          gradient.addColorStop(0.5, "rgba(251, 146, 60, 0.85)");
           gradient.addColorStop(1, "rgba(56, 189, 248, 0.65)");
         } else {
           gradient.addColorStop(0, "rgba(71, 85, 105, 0.35)");

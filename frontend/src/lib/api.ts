@@ -11,6 +11,16 @@ import {
 } from "./types";
 import { localStore } from "./storage";
 
+let isOnline = true;
+const statusListeners = new Set<(online: boolean) => void>();
+
+function setOnlineState(online: boolean) {
+  if (isOnline !== online) {
+    isOnline = online;
+    statusListeners.forEach((fn) => fn(online));
+  }
+}
+
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
@@ -50,20 +60,54 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
       throw new Error(`API error ${res.status}: ${errorText}`);
     }
 
+    setOnlineState(true);
     return res.json();
   } catch (err) {
+    setOnlineState(false);
     throw err;
   }
 }
 
 export const api = {
+  isServerOnline(): boolean {
+    return isOnline;
+  },
+
+  subscribeStatus(listener: (online: boolean) => void): () => void {
+    statusListeners.add(listener);
+    listener(isOnline);
+    return () => {
+      statusListeners.delete(listener);
+    };
+  },
+
+  async checkHealth(): Promise<boolean> {
+    try {
+      const res = await fetch(`${getBaseUrl()}/health`, { method: "GET" });
+      const online = res.ok;
+      setOnlineState(online);
+      return online;
+    } catch {
+      setOnlineState(false);
+      return false;
+    }
+  },
+
   async getVoiceToken(): Promise<{
     token: string;
     agent_id?: string;
     expires_in_seconds: number;
     max_session_duration_seconds: number;
   }> {
-    return request("/sessions/token");
+    try {
+      return await request("/sessions/token");
+    } catch {
+      return {
+        token: "demo-simulation-token",
+        expires_in_seconds: 3600,
+        max_session_duration_seconds: 600,
+      };
+    }
   },
 
   async createSession(title?: string): Promise<Conversation> {
@@ -73,7 +117,6 @@ export const api = {
         body: JSON.stringify({ title: title || "Live Capture Session" }),
       });
     } catch {
-      // Local fallback for offline session creation
       const localId = "local-" + Math.random().toString(36).substring(2, 10);
       return {
         id: localId,
@@ -113,110 +156,80 @@ export const api = {
 
   async completeSession(
     id: string,
-    data: {
-      external_session_id?: string;
-      transcript_text?: string;
-      raw_transcript?: any;
-    }
-  ): Promise<{ status: string; session_id: string }> {
+    data: { transcript_text?: string; raw_transcript?: any }
+  ): Promise<any> {
     try {
-      const res = await request<{ status: string; session_id: string }>(
-        `/sessions/${id}/complete`,
-        {
-          method: "POST",
-          body: JSON.stringify(data),
-        }
-      );
-      localStore.clearDraft();
-      return res;
-    } catch (e) {
-      // Save to local offline queue for sync when connection restores
+      return await request(`/sessions/${id}/complete`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    } catch {
       localStore.queueOfflineSession({
         id,
-        title: "Session " + new Date().toLocaleTimeString(),
+        title: "Completed Session",
         transcriptText: data.transcript_text || "",
-        turns: data.raw_transcript?.turns || [],
+        turns: [],
         createdAt: new Date().toISOString(),
       });
-      localStore.clearDraft();
-      return { status: "queued_offline", session_id: id };
+      return { status: "queued_locally", id };
     }
-  },
-
-  async extractRaw(
-    transcriptText: string,
-    title?: string
-  ): Promise<{
-    conversation_id: string;
-    claims_extracted: number;
-    entities_found: number;
-    resurfacing_events_triggered: number;
-  }> {
-    return request("/sessions/extract-raw", {
-      method: "POST",
-      body: JSON.stringify({
-        transcript_text: transcriptText,
-        title: title || "Imported Capture",
-      }),
-    });
   },
 
   async submitQuickNote(audioBlob: Blob): Promise<{
-    conversation_id: string;
     transcript_text: string;
     claims_extracted: number;
-    entities_found: number;
-    resurfacing_events_triggered: number;
+    session_id?: string;
   }> {
-    const formData = new FormData();
-    formData.append("audio", audioBlob, "quick-note.wav");
-
+    const url = `${getBaseUrl()}/sessions/quick-note`;
     const token = localStore.getAuthToken();
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      "Content-Type": "audio/wav",
+    };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const baseUrl = getBaseUrl();
-    const res = await fetch(`${baseUrl}/sessions/quick-note`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: audioBlob,
+      });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Quick note failed (${res.status}): ${errText}`);
+      if (!res.ok) {
+        throw new Error(`Quick note HTTP error ${res.status}`);
+      }
+
+      setOnlineState(true);
+      return res.json();
+    } catch (err) {
+      setOnlineState(false);
+      throw err;
     }
-
-    return res.json();
   },
 
-  async listClaims(params?: {
-    conversation_id?: string;
-    entity_name?: string;
-    claim_type?: string;
-    sensitivity?: string;
-  }): Promise<Claim[]> {
-    const query = new URLSearchParams();
-    if (params?.conversation_id) query.set("conversation_id", params.conversation_id);
-    if (params?.entity_name) query.set("entity_name", params.entity_name);
-    if (params?.claim_type) query.set("claim_type", params.claim_type);
-    if (params?.sensitivity) query.set("sensitivity", params.sensitivity);
-    const qs = query.toString();
+  async extractRaw(transcriptText: string, title?: string): Promise<any> {
+    return request("/sessions/extract-raw", {
+      method: "POST",
+      body: JSON.stringify({
+        transcript_text: transcriptText,
+        title: title || "Imported Scenario",
+      }),
+    });
+  },
 
+  async listClaims(conversationId?: string): Promise<Claim[]> {
     try {
-      const claims = await request<Claim[]>(`/claims${qs ? `?${qs}` : ""}`);
-      localStore.cacheClaims(claims);
-      return claims;
+      const qs = conversationId ? `?conversation_id=${conversationId}` : "";
+      return await request(`/claims${qs}`);
     } catch {
-      return localStore.getCachedClaims();
+      return [];
     }
   },
 
   async getClaim(id: string): Promise<{
     claim: Claim;
-    conversation_title?: string;
+    conversation_title?: string | null;
     incoming_relationships: Relationship[];
     outgoing_relationships: Relationship[];
   }> {
@@ -232,17 +245,36 @@ export const api = {
   },
 
   async submitReview(
-    decisions: { claim_id: string; action: "store" | "discard" }[]
-  ): Promise<{ stored_count: number; discarded_count: number }> {
+    decisions: Array<{ claim_id: string; action: "store" | "discard" }>
+  ): Promise<{ stored_count: number; discarded_count: number; status: string }> {
     return request("/review", {
       method: "POST",
       body: JSON.stringify({ decisions }),
     });
   },
 
-  async discardAllPending(): Promise<{ discarded_count: number }> {
+  async discardAllPending(): Promise<{ stored_count: number; discarded_count: number; status: string }> {
     return request("/review/discard-all-pending", {
       method: "POST",
+    });
+  },
+
+  async decideSensitivity(
+    claimId: string,
+    decision: "confirmed_store" | "confirmed_discard"
+  ): Promise<Claim> {
+    return request(`/review/${claimId}`, {
+      method: "POST",
+      body: JSON.stringify({ decision }),
+    });
+  },
+
+  async bulkReview(
+    decision: "confirmed_store" | "confirmed_discard"
+  ): Promise<{ updated: number }> {
+    return request("/review/bulk", {
+      method: "POST",
+      body: JSON.stringify({ decision }),
     });
   },
 
@@ -270,12 +302,21 @@ export const api = {
   },
 
   async getGraph(entityName?: string): Promise<GraphData> {
-    const qs = entityName ? `?entity_name=${encodeURIComponent(entityName)}` : "";
-    return request(`/graph/entities${qs}`);
+    try {
+      const qs = entityName ? `?entity_name=${encodeURIComponent(entityName)}` : "";
+      return await request(`/graph/entities${qs}`);
+    } catch {
+      // Graceful fallback when backend is offline
+      return { nodes: [], edges: [] };
+    }
   },
 
   async getDependencies(claimId: string): Promise<any[]> {
-    return request(`/graph/dependencies/${claimId}`);
+    try {
+      return await request(`/graph/dependencies/${claimId}`);
+    } catch {
+      return [];
+    }
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {
