@@ -1,13 +1,19 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
-import { getAuthUserId } from "../services/auth";
+import { getOptionalAuthUserId, requireAuthUserId } from "../services/auth";
+import { rateLimiter } from "../middleware/rate-limit";
 
 export const reviewRouter = new Hono<AppEnv>();
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Retrieves sensitive flagged claims awaiting consent for the requesting user.
+ */
 reviewRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await getOptionalAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
 
   let query = `
@@ -46,7 +52,7 @@ reviewRouter.get("/", async (c) => {
   `;
 
   const params: any[] = [userId];
-  if (conversationId) {
+  if (conversationId && UUID_REGEX.test(conversationId)) {
     query += ` AND c.conversation_id = $2::uuid`;
     params.push(conversationId);
   }
@@ -81,20 +87,34 @@ reviewRouter.get("/", async (c) => {
   return c.json(formatted);
 });
 
-reviewRouter.post("/", async (c) => {
+/**
+ * Reviews flagged claims.
+ * Enforces authentication and strict tenant ownership over each claim.
+ */
+reviewRouter.post("/", rateLimiter(60000, 20, "review-update"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
+  const userId = await requireAuthUserId(c);
+
   const payload = await c.req.json<{
     decisions: Array<{ claim_id: string; action: "store" | "discard" }>;
-  }>();
+  }>().catch(() => ({ decisions: [] }));
 
   let storedCount = 0;
   let discardedCount = 0;
 
   for (const item of payload.decisions || []) {
+    if (!item.claim_id || !UUID_REGEX.test(item.claim_id)) continue;
+
     const newSensitivity = item.action === "store" ? "confirmed_store" : "confirmed_discard";
     const res = (await sql(
-      `UPDATE claims SET sensitivity = $1 WHERE id = $2::uuid RETURNING id`,
-      [newSensitivity, item.claim_id]
+      `UPDATE claims c
+       SET sensitivity = $1
+       FROM conversations cv
+       WHERE cv.id = c.conversation_id
+         AND cv.user_id = $3
+         AND c.id = $2::uuid
+       RETURNING c.id`,
+      [newSensitivity, item.claim_id, userId]
     )) as any[];
 
     if (res.length > 0) {
@@ -110,9 +130,12 @@ reviewRouter.post("/", async (c) => {
   });
 });
 
-reviewRouter.post("/discard-all-pending", async (c) => {
+/**
+ * Discards all pending flagged claims for the authenticated user.
+ */
+reviewRouter.post("/discard-all-pending", rateLimiter(60000, 10, "review-discard-all"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await requireAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
 
   let updateSql = `
@@ -125,7 +148,7 @@ reviewRouter.post("/discard-all-pending", async (c) => {
   `;
   const params: any[] = [userId];
 
-  if (conversationId) {
+  if (conversationId && UUID_REGEX.test(conversationId)) {
     updateSql += ` AND c.conversation_id = $2::uuid`;
     params.push(conversationId);
   }

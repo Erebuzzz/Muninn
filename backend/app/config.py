@@ -4,14 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
-    database_url: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql+asyncpg://neondb_owner:npg_6RgoG7wkCpHe@ep-square-star-artu8u5i-pooler.c-4.us-west-2.aws.neon.tech/neondb?ssl=require"
-    )
-    sync_database_url: str = os.getenv(
-        "SYNC_DATABASE_URL",
-        "postgresql://neondb_owner:npg_6RgoG7wkCpHe@ep-square-star-artu8u5i-pooler.c-4.us-west-2.aws.neon.tech/neondb?sslmode=require"
-    )
+    database_url: str = os.getenv("DATABASE_URL", "")
+    sync_database_url: str = os.getenv("SYNC_DATABASE_URL", "")
     assemblyai_api_key: str = os.getenv("ASSEMBLYAI_API_KEY", "")
     assemblyai_voice_agent_id: str = os.getenv("ASSEMBLYAI_VOICE_AGENT_ID", "")
     llm_gateway_url: str = os.getenv("LLM_GATEWAY_URL", "https://llm-gateway.assemblyai.com/v1")

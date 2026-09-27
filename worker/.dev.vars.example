@@ -1,5 +1,8 @@
 # Database Connection (Neon Serverless PostgreSQL with pgvector)
-DATABASE_URL=postgresql://neondb_owner:npg_6RgoG7wkCpHe@ep-square-star-artu8u5i-pooler.c-4.us-west-2.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://<username>:<password>@<neon-hostname>/neondb?sslmode=require
+
+# Authentication Secrets
+JWT_SECRET=your_jwt_secret_key_min_32_chars_here
 
 # AssemblyAI Credentials
 ASSEMBLYAI_API_KEY=your_assemblyai_api_key_here
@@ -9,4 +12,4 @@ LLM_GATEWAY_MODEL=claude-3-5-sonnet
 
 # Application Defaults
 DEFAULT_USER_ID=00000000-0000-0000-0000-000000000001
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,capacitor://localhost
+CORS_ORIGINS=https://muninn-nmk.pages.dev,http://localhost:3000,http://127.0.0.1:3000,capacitor://localhost

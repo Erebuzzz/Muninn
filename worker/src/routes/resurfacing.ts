@@ -2,13 +2,16 @@ import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
 import { ResurfacingService } from "../services/resurfacing";
-import { getAuthUserId } from "../services/auth";
+import { getOptionalAuthUserId, requireAuthUserId } from "../services/auth";
+import { rateLimiter } from "../middleware/rate-limit";
 
 export const resurfacingRouter = new Hono<AppEnv>();
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 resurfacingRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await getOptionalAuthUserId(c);
   const includeDismissed = c.req.query("include_dismissed") === "true";
   const limit = Math.min(Math.max(parseInt(c.req.query("limit") || "20", 10), 1), 50);
 
@@ -40,25 +43,31 @@ resurfacingRouter.get("/", async (c) => {
   return c.json(rows);
 });
 
-resurfacingRouter.post("/:id/dismiss", async (c) => {
+resurfacingRouter.post("/:id/dismiss", rateLimiter(60000, 20, "resurfacing-dismiss"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const eventId = c.req.param("id");
 
+  if (!UUID_REGEX.test(eventId)) {
+    return c.json({ detail: "Invalid event ID format" }, 400);
+  }
+
+  const userId = await requireAuthUserId(c);
+
   const rows = (await sql(
-    `UPDATE resurfacing_events SET dismissed = true WHERE id = $1::uuid RETURNING id`,
-    [eventId]
+    `UPDATE resurfacing_events SET dismissed = true WHERE id = $1::uuid AND user_id = $2 RETURNING id`,
+    [eventId, userId]
   )) as any[];
 
   if (rows.length === 0) {
-    return c.json({ detail: "Event not found" }, 404);
+    return c.json({ detail: "Event not found or unauthorized" }, 404);
   }
 
   return c.json({ status: "dismissed", event_id: eventId });
 });
 
-resurfacingRouter.post("/evaluate", async (c) => {
+resurfacingRouter.post("/evaluate", rateLimiter(60000, 10, "resurfacing-eval"), async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await requireAuthUserId(c);
 
   const events = await ResurfacingService.evaluateResurfacing(sql, c.env, userId);
   return c.json({ status: "ok", events_generated: events.length });

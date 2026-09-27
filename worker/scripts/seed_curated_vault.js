@@ -1,7 +1,11 @@
 const { neon } = require('@neondatabase/serverless');
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_6RgoG7wkCpHe@ep-square-star-artu8u5i-pooler.c-4.us-west-2.aws.neon.tech/neondb?sslmode=require';
-const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error("Error: DATABASE_URL environment variable is required to run seed script.");
+  process.exit(1);
+}
+const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID || '00000000-0000-0000-0000-000000000001';
 
 const sql = neon(DATABASE_URL);
 

@@ -1,13 +1,15 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
-import { getAuthUserId } from "../services/auth";
+import { getOptionalAuthUserId } from "../services/auth";
 
 export const claimsRouter = new Hono<AppEnv>();
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 claimsRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = await getAuthUserId(c);
+  const userId = await getOptionalAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
   const entityName = c.req.query("entity_name");
   const claimType = c.req.query("claim_type");
@@ -107,6 +109,13 @@ claimsRouter.get("/:id", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const claimId = c.req.param("id");
 
+  if (!UUID_REGEX.test(claimId)) {
+    return c.json({ detail: "Invalid claim ID format" }, 400);
+  }
+
+  const userId = await getOptionalAuthUserId(c);
+  const defaultUserId = c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+
   const rows = (await sql(
     `SELECT
        c.id,
@@ -134,15 +143,15 @@ claimsRouter.get("/:id", async (c) => {
          '[]'
        ) AS entities
      FROM claims c
-     LEFT JOIN conversations cv ON cv.id = c.conversation_id
+     JOIN conversations cv ON cv.id = c.conversation_id
      LEFT JOIN speakers sp ON sp.id = c.speaker_id
      LEFT JOIN task_state ts ON ts.claim_id = c.id
      LEFT JOIN claim_entities ce ON ce.claim_id = c.id
      LEFT JOIN entities e ON e.id = ce.entity_id
-     WHERE c.id = $1::uuid
+     WHERE c.id = $1::uuid AND (cv.user_id = $2 OR cv.user_id = $3)
      GROUP BY c.id, c.conversation_id, cv.title, c.speaker_id, sp.diarization_tag, c.type, c.text, c.confidence, c.sensitivity, c.timestamp, ts.status, ts.blocked_by, ts.resurfaced_at
      LIMIT 1`,
-    [claimId]
+    [claimId, userId, defaultUserId]
   )) as any[];
 
   if (rows.length === 0) {

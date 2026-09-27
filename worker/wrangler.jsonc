@@ -16,6 +16,6 @@
     "DEFAULT_USER_ID": "00000000-0000-0000-0000-000000000001",
     "LLM_GATEWAY_URL": "https://llm-gateway.assemblyai.com/v1",
     "LLM_GATEWAY_MODEL": "claude-3-5-sonnet",
-    "CORS_ORIGINS": "*"
+    "CORS_ORIGINS": "https://muninn-nmk.pages.dev,http://localhost:3000,http://127.0.0.1:3000,capacitor://localhost"
   }
 }
