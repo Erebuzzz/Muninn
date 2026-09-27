@@ -16,6 +16,10 @@ import Link from "next/link";
 
 export const viewport: Viewport = {
   themeColor: "#05070c",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {

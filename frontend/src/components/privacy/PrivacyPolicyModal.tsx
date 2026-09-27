@@ -63,7 +63,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyModalProps)
           <section className="space-y-2">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              2. Web Ephemeral Sandbox vs. Local Tablet Hardware Storage
+              2. Web Ephemeral Sandbox vs. Local Device Hardware Storage
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
@@ -73,9 +73,9 @@ export function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyModalProps)
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
-                <span className="font-semibold text-emerald-300 block mb-1">Android Tablet APK (Local-First)</span>
+                <span className="font-semibold text-emerald-300 block mb-1">Android Mobile & Tablet APK (Local-First)</span>
                 <p className="text-[11px]">
-                  Sign-in is completely optional on tablet hardware. All recorded sessions, claims, and knowledge graphs remain stored securely on device storage (Android SharedPreferences). If you decide to sign in, records can sync back to your cloud vault.
+                  Sign-in is completely optional on mobile and tablet devices. All recorded sessions, claims, and knowledge graphs remain stored securely on device storage (Android SharedPreferences). If you decide to sign in, records can sync back to your cloud vault.
                 </p>
               </div>
             </div>
