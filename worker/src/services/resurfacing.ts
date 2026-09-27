@@ -158,11 +158,18 @@ export class ResurfacingService {
         body: JSON.stringify({
           model,
           messages: [
-            { role: "system", content: RESURFACING_SYSTEM_PROMPT },
+            {
+              role: "system",
+              content: RESURFACING_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
             { role: "user", content: promptInput },
           ],
           temperature: 0.2,
           max_tokens: 1000,
+          fallbacks: [{ model: "gemini-2.5-flash" }],
+          fallback_config: { depth: 1, retry: true },
+          post_processing_steps: [{ type: "json-repair" }],
         }),
       });
 
@@ -171,8 +178,17 @@ export class ResurfacingService {
       }
 
       const data = (await resp.json()) as {
+        request_id?: string;
+        model?: string;
         choices: Array<{ message: { content: string } }>;
       };
+
+      console.log(
+        `[LLM Gateway] Resurfacing evaluated. request_id: ${data.request_id || "unknown"}, model: ${
+          data.model || model
+        }`
+      );
+
       let content = data.choices[0]?.message?.content?.trim() || "";
       if (content.startsWith("```")) {
         content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");

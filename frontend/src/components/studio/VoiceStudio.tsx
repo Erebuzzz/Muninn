@@ -42,6 +42,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const wsRef = useRef<WebSocket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  const [isRecordingMemo, setIsRecordingMemo] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const startLiveSession = async () => {
     try {
@@ -223,6 +226,59 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     setStatus("idle");
   };
 
+  const startQuickMemo = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        stream.getTracks().forEach((t) => t.stop());
+        setStatus("processing");
+        try {
+          const res = await api.submitQuickNote(audioBlob);
+          soundFX.playClaimStored();
+          setTurns((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              speaker: "You (Quick Note)",
+              text: res.transcript_text,
+              timestamp: new Date().toLocaleTimeString(),
+            },
+          ]);
+          if (onExtractionFinished) onExtractionFinished();
+        } catch (err) {
+          console.error("Quick note error:", err);
+          alert("Quick note capture failed. Verify microphone permissions.");
+        } finally {
+          setStatus("idle");
+          setIsRecordingMemo(false);
+        }
+      };
+
+      recorder.start();
+      setIsRecordingMemo(true);
+      setStatus("listening");
+      soundFX.playSessionStart();
+    } catch (err) {
+      console.error("Mic access failed:", err);
+      alert("Microphone access denied or unavailable.");
+    }
+  };
+
+  const stopQuickMemo = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
   const handleManualImport = async () => {
     if (!manualTranscript.trim()) return;
     setStatus("processing");
@@ -346,34 +402,53 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       <div className="flex items-center justify-between pt-2">
         <div className="text-[11px] text-[#8b9bb4]">
           {isRecording ? (
-            <span className="text-amber-400 font-medium">Session in progress (AudioWorklet 24 kHz)</span>
+            <span className="text-amber-400 font-medium">Live capture in progress (AudioWorklet 24 kHz)</span>
+          ) : isRecordingMemo ? (
+            <span className="text-cyan-400 font-medium">Recording voice memo (Sync STT)</span>
           ) : (
-            <span>Ready for session</span>
+            <span>Ready for capture or memo</span>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          {!isRecording ? (
+          {!isRecording && (
             <button
-              onClick={startLiveSession}
+              onClick={isRecordingMemo ? stopQuickMemo : startQuickMemo}
               disabled={status === "connecting" || status === "processing"}
-              className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
+              className={`px-4 py-2 rounded-lg font-semibold text-xs transition shadow-md flex items-center gap-2 ${
+                isRecordingMemo
+                  ? "bg-rose-600 hover:bg-rose-700 text-white animate-pulse"
+                  : "bg-[#18202d] hover:bg-[#222c3e] text-[#a0b0cb] hover:text-white border border-[#2a3547]"
+              }`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-              </svg>
-              Start Capture
+              <span className={`w-2 h-2 rounded-full ${isRecordingMemo ? "bg-white" : "bg-cyan-400"}`} />
+              {isRecordingMemo ? "Finish Memo" : "Quick Memo (Sync STT)"}
             </button>
-          ) : (
-            <button
-              onClick={endSession}
-              disabled={status === "processing"}
-              className="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
-            >
-              <span className="w-2 h-2 rounded bg-white" />
-              End & Remember
-            </button>
+          )}
+
+          {!isRecordingMemo && (
+            !isRecording ? (
+              <button
+                onClick={startLiveSession}
+                disabled={status === "connecting" || status === "processing"}
+                className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+                Live Capture Session
+              </button>
+            ) : (
+              <button
+                onClick={endSession}
+                disabled={status === "processing"}
+                className="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition shadow-md flex items-center gap-2 disabled:opacity-50"
+              >
+                <span className="w-2 h-2 rounded bg-white" />
+                End & Remember
+              </button>
+            )
           )}
         </div>
       </div>

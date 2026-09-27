@@ -4,6 +4,7 @@ import { getDb } from "../db/client";
 import { VoiceAgentService } from "../services/voice-agent";
 import { ExtractionService } from "../services/extraction";
 import { ResurfacingService } from "../services/resurfacing";
+import { SyncSTTService } from "../services/sync-stt";
 
 export const sessionsRouter = new Hono<AppEnv>();
 
@@ -274,3 +275,61 @@ sessionsRouter.post("/extract-raw", async (c) => {
     resurfacing_events_triggered: events.length,
   });
 });
+
+sessionsRouter.post("/quick-note", async (c) => {
+  const sql = getDb(c.env.DATABASE_URL);
+  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+
+  let audioBytes: ArrayBuffer;
+  let mimeType = "audio/wav";
+
+  const contentType = c.req.header("content-type") || "";
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await c.req.formData();
+    const file = formData.get("audio") as File;
+    if (!file) {
+      return c.json({ detail: "audio file is required in form-data" }, 400);
+    }
+    audioBytes = await file.arrayBuffer();
+    mimeType = file.type || "audio/wav";
+  } else {
+    audioBytes = await c.req.arrayBuffer();
+    mimeType = contentType || "audio/wav";
+  }
+
+  if (!audioBytes || audioBytes.byteLength === 0) {
+    return c.json({ detail: "Audio data is empty" }, 400);
+  }
+
+  try {
+    const sttResult = await SyncSTTService.transcribeAudio(audioBytes, mimeType, c.env);
+    const transcriptText = sttResult.text;
+
+    const convId = crypto.randomUUID();
+    const title = `Voice Note ${new Date().toLocaleTimeString()}`;
+    const nowIso = new Date().toISOString();
+
+    await sql(
+      `INSERT INTO conversations (id, user_id, title, started_at, ended_at, status, raw_transcript)
+       VALUES ($1, $2, $3, $4, $4, 'completed', $5)`,
+      [convId, userId, title, nowIso, JSON.stringify({ text: transcriptText, words: sttResult.words })]
+    );
+
+    const extraction = await ExtractionService.extractFromTranscript(transcriptText, c.env);
+    const persisted = await ExtractionService.persistExtraction(sql, convId, userId, extraction);
+
+    const entityNames = extraction.entities.map((e) => e.name);
+    const events = await ResurfacingService.evaluateResurfacing(sql, c.env, userId, convId, entityNames);
+
+    return c.json({
+      conversation_id: convId,
+      transcript_text: transcriptText,
+      claims_extracted: persisted.length,
+      entities_found: extraction.entities.length,
+      resurfacing_events_triggered: events.length,
+    });
+  } catch (err: any) {
+    return c.json({ detail: "Quick note processing failed", error: err.message }, 500);
+  }
+});
+

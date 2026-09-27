@@ -18,27 +18,82 @@ Identify RELATIONSHIPS between claims using: "blocks", "depends_on", "resolves",
 
 Extract ENTITIES (type: project | person | component | system | vendor) mentioned across the claims, and link each claim to the entities it references.
 
-If nothing in the transcript is extractable, return an empty claims array. Do not force extraction to justify your existence.
+If nothing in the transcript is extractable, return an empty claims array. Do not force extraction to justify your existence.`;
 
-OUTPUT SCHEMA:
-{
-  "entities": [ { "type": "project", "name": "Project Name" } ],
-  "claims": [
-    {
-      "temp_id": "c1",
-      "type": "task",
-      "text": "Redesign the heatsink mounting bracket",
-      "speaker": "Speaker A",
-      "timestamp": "2026-09-27T10:00:00Z",
-      "confidence": "unverified",
-      "sensitivity": "none",
-      "entities": ["Project Name"]
-    }
-  ],
-  "relationships": [
-    { "from": "c1", "to": "c2", "type": "depends_on" }
-  ]
-}`;
+export const EXTRACTION_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    entities: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string" },
+          name: { type: "string" },
+        },
+        required: ["type", "name"],
+        additionalProperties: false,
+      },
+    },
+    claims: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          temp_id: { type: "string" },
+          type: {
+            type: "string",
+            enum: ["observation", "hypothesis", "decision", "task", "question"],
+          },
+          text: { type: "string" },
+          speaker: { type: "string" },
+          timestamp: { type: "string" },
+          confidence: {
+            type: "string",
+            enum: ["verified", "unverified", "superseded"],
+          },
+          sensitivity: {
+            type: "string",
+            enum: ["none", "flagged"],
+          },
+          entities: {
+            type: "array",
+            items: { type: "string" },
+          },
+        },
+        required: [
+          "temp_id",
+          "type",
+          "text",
+          "speaker",
+          "timestamp",
+          "confidence",
+          "sensitivity",
+          "entities",
+        ],
+        additionalProperties: false,
+      },
+    },
+    relationships: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          from: { type: "string" },
+          to: { type: "string" },
+          type: {
+            type: "string",
+            enum: ["blocks", "depends_on", "resolves", "contradicts", "supersedes"],
+          },
+        },
+        required: ["from", "to", "type"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["entities", "claims", "relationships"],
+  additionalProperties: false,
+};
 
 export class ExtractionService {
   static async extractFromTranscript(
@@ -55,11 +110,29 @@ export class ExtractionService {
     const payload = {
       model,
       messages: [
-        { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
+        {
+          role: "system",
+          content: EXTRACTION_SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" },
+        },
         { role: "user", content: `Transcript to extract:\n\n${transcriptText}` },
       ],
       temperature: 0.1,
       max_tokens: 3000,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "muninn_extraction",
+          schema: EXTRACTION_JSON_SCHEMA,
+          strict: true,
+        },
+      },
+      post_processing_steps: [{ type: "json-repair" }],
+      fallbacks: [
+        { model: "gemini-2.5-flash" },
+        { model: "claude-haiku-4-5-20251001" },
+      ],
+      fallback_config: { depth: 2, retry: true },
     };
 
     try {
@@ -73,14 +146,23 @@ export class ExtractionService {
       });
 
       if (!resp.ok) {
+        console.warn(`[LLM Gateway] HTTP ${resp.status} on extraction: ${await resp.text()}`);
         return this.fallbackExtract(transcriptText);
       }
 
       const data = (await resp.json()) as {
+        request_id?: string;
+        model?: string;
         choices: Array<{ message: { content: string } }>;
       };
-      let content = data.choices[0]?.message?.content?.trim() || "";
 
+      console.log(
+        `[LLM Gateway] Extraction succeeded. request_id: ${data.request_id || "unknown"}, model: ${
+          data.model || model
+        }`
+      );
+
+      let content = data.choices[0]?.message?.content?.trim() || "";
       if (content.startsWith("```")) {
         content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
       }
@@ -91,7 +173,8 @@ export class ExtractionService {
         claims: parsed.claims || [],
         relationships: parsed.relationships || [],
       };
-    } catch {
+    } catch (err) {
+      console.error("[LLM Gateway] Extraction exception, falling back:", err);
       return this.fallbackExtract(transcriptText);
     }
   }
@@ -211,9 +294,8 @@ export class ExtractionService {
     userId: string,
     extraction: ExtractionResult
   ): Promise<Array<{ id: string; text: string; type: string }>> {
-    const entityMap = new Map<string, string>(); // name -> id
+    const entityMap = new Map<string, string>();
 
-    // 1. Upsert entities
     for (const ent of extraction.entities) {
       const existing = (await sql(
         `SELECT id FROM entities WHERE user_id = $1 AND name = $2 LIMIT 1`,
@@ -236,7 +318,6 @@ export class ExtractionService {
     const tempIdIsTask = new Map<string, boolean>();
     const persistedClaims: Array<{ id: string; text: string; type: string }> = [];
 
-    // 2. Insert claims and task_state
     for (const c of extraction.claims) {
       const claimId = crypto.randomUUID();
       const nowIso = new Date().toISOString();
@@ -255,7 +336,6 @@ export class ExtractionService {
         ]
       );
 
-      // Link entities
       for (const entName of c.entities) {
         const entId = entityMap.get(entName);
         if (entId) {
@@ -266,7 +346,6 @@ export class ExtractionService {
         }
       }
 
-      // If task, insert task_state
       if (c.type === "task") {
         await sql(
           `INSERT INTO task_state (claim_id, status, blocked_by, resurfaced_at) VALUES ($1, 'open', NULL, '{}')`,
@@ -279,7 +358,6 @@ export class ExtractionService {
       persistedClaims.push({ id: claimId, text: c.text, type: c.type });
     }
 
-    // 3. Insert relationships and update task blocked status
     for (const rel of extraction.relationships) {
       const fromClaimId = tempIdToClaimId.get(rel.from);
       const toClaimId = tempIdToClaimId.get(rel.to);
