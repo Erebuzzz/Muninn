@@ -10,24 +10,25 @@
   
   /* Nyx (Dark Mode) defaults */
   --bg-color: #05070c;
-  --text-main: #f1f5f9;
+  --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --glass-bg: linear-gradient(135deg, rgba(13, 19, 33, 0.72) 0%, rgba(8, 12, 22, 0.85) 100%);
+  --glass-bg: linear-gradient(135deg, rgba(13, 19, 33, 0.48) 0%, rgba(8, 12, 22, 0.62) 100%);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-specular: rgba(255, 255, 255, 0.22);
+  --glass-border-specular: rgba(255, 255, 255, 0.18);
   --glass-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), 0 0 24px -6px rgba(139, 92, 246, 0.08);
-  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 70%);
 }
 
 html.helios {
-  --bg-color: #f8fafc;
+  /* Warm Helios sunrise morning amber ambiance */
+  --bg-color: #fbf7ee;
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.9) 100%);
-  --glass-border: rgba(249, 115, 22, 0.2);
-  --glass-border-specular: rgba(255, 255, 255, 0.95);
-  --glass-shadow: 0 16px 36px -10px rgba(249, 115, 22, 0.08), 0 0 24px -6px rgba(249, 115, 22, 0.06);
-  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+  --text-muted: #334155;
+  --glass-bg: linear-gradient(135deg, rgba(255, 252, 245, 0.48) 0%, rgba(254, 248, 237, 0.62) 100%);
+  --glass-border: rgba(234, 88, 12, 0.18);
+  --glass-border-specular: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 16px 36px -10px rgba(234, 88, 12, 0.07), 0 0 24px -6px rgba(249, 115, 22, 0.05);
+  --caustic-glow: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
 }
 
 body {
@@ -38,11 +39,48 @@ body {
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Stained Glass Window Panel Metaphor */
+/* Ensure crisp contrast for text in Helios (Light Mode) */
+html.helios .text-slate-200,
+html.helios .text-slate-300,
+html.helios .text-white {
+  color: #0f172a !important;
+}
+
+html.helios .text-slate-400,
+html.helios .text-slate-500 {
+  color: #334155 !important;
+}
+
+html.helios .text-slate-600 {
+  color: #475569 !important;
+}
+
+html.helios .border-slate-800,
+html.helios .border-slate-800\/60,
+html.helios .border-slate-800\/80 {
+  border-color: rgba(234, 88, 12, 0.15) !important;
+}
+
+html.helios .bg-slate-950,
+html.helios .bg-slate-950\/70,
+html.helios .bg-slate-950\/80,
+html.helios .bg-slate-950\/90 {
+  background-color: rgba(255, 253, 249, 0.72) !important;
+}
+
+html.helios .bg-slate-900,
+html.helios .bg-slate-900\/60,
+html.helios .bg-slate-900\/70,
+html.helios .bg-slate-900\/80,
+html.helios .bg-slate-900\/90 {
+  background-color: rgba(254, 247, 237, 0.8) !important;
+}
+
+/* Stained Glass Window Panel Metaphor - Truly Translucent */
 .glass-window {
   background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--glass-border);
   border-top: 1px solid var(--glass-border-specular);
   box-shadow: var(--glass-shadow);

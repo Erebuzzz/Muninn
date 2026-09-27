@@ -41,10 +41,10 @@ export const BackendStatusPill: React.FC<BackendStatusPillProps> = ({
   if (online) {
     return (
       <div
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 ${className}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 shadow-sm ${className}`}
         title="API Server Online: Port 8000"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
         <span>API: 8000 Online</span>
       </div>
     );

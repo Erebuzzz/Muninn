@@ -205,9 +205,11 @@ export function slideOutDrawer(
 }
 
 /**
- * Lightweight canvas particle system for floating mythological rune dust.
+ * Atmospheric Sky system: Ethereal drifting clouds and twinkling celestial stars.
+ * In Helios: warm golden sunlight filtering through delicate clouds.
+ * In Nyx: moonlight and violet starlight illuminated clouds with twinkling stars.
  */
-export function initMythicDust(canvas: HTMLCanvasElement): () => void {
+export function initAtmosphericSky(canvas: HTMLCanvasElement): () => void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return () => {};
 
@@ -221,64 +223,217 @@ export function initMythicDust(canvas: HTMLCanvasElement): () => void {
   };
   window.addEventListener("resize", resizeHandler);
 
-  interface Particle {
+  // 4 to 6 gentle drifting cloud masses (not dense, ethereal)
+  interface CloudMass {
     x: number;
     y: number;
-    size: number;
+    rx: number;
+    ry: number;
     vx: number;
     vy: number;
     alpha: number;
-    targetAlpha: number;
-    color: string;
+    phase: number;
   }
 
-  const particles: Particle[] = [];
-  const particleCount = Math.min(36, Math.floor((width * height) / 35000));
-
-  const colors = [
-    "rgba(249, 115, 22, ", // Sun Orange (Muninn Solar Core)
-    "rgba(139, 92, 246, ", // Violet Starlight (Nyx Night)
-    "rgba(56, 189, 248, ", // Cyan Ether (Norse Cold Sky)
-    "rgba(251, 146, 60, ", // Solar Flare Peach
-  ];
-
-  for (let i = 0; i < particleCount; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      size: Math.random() * 2 + 0.8,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: -Math.random() * 0.45 - 0.15,
-      alpha: Math.random() * 0.6 + 0.1,
-      targetAlpha: Math.random() * 0.6 + 0.1,
-      color: colors[Math.floor(Math.random() * colors.length)],
+  const cloudCount = 5;
+  const clouds: CloudMass[] = [];
+  for (let i = 0; i < cloudCount; i++) {
+    clouds.push({
+      x: (Math.random() * 0.9 + 0.05) * width,
+      y: (Math.random() * 0.7 + 0.1) * height,
+      rx: Math.random() * 260 + 220,
+      ry: Math.random() * 140 + 90,
+      vx: (Math.random() * 0.12 + 0.04) * (i % 2 === 0 ? 1 : -1),
+      vy: (Math.random() * 0.06 - 0.03),
+      alpha: Math.random() * 0.18 + 0.12,
+      phase: Math.random() * Math.PI * 2,
     });
   }
 
+  // Twinkling celestial stars
+  interface Star {
+    x: number;
+    y: number;
+    radius: number;
+    alpha: number;
+    twinkleSpeed: number;
+    phase: number;
+  }
+
+  const stars: Star[] = [];
+  const starCount = Math.min(48, Math.floor((width * height) / 25000));
+  for (let i = 0; i < starCount; i++) {
+    stars.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.6 + 0.2,
+      twinkleSpeed: Math.random() * 0.02 + 0.01,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+
+  let time = 0;
+
   const render = () => {
     ctx.clearRect(0, 0, width, height);
+    time += 0.01;
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
+    const isHelios = document.documentElement.classList.contains("helios");
 
-      // Wrap around screen boundaries
-      if (p.y < -10) p.y = height + 10;
-      if (p.x < -10) p.x = width + 10;
-      if (p.x > width + 10) p.x = -10;
+    // 1. Render Atmospheric Clouds
+    for (let i = 0; i < clouds.length; i++) {
+      const c = clouds[i];
+      c.x += c.vx;
+      c.y += c.vy;
 
-      // Subtle flicker
-      p.alpha += (p.targetAlpha - p.alpha) * 0.04;
-      if (Math.abs(p.targetAlpha - p.alpha) < 0.03) {
-        p.targetAlpha = Math.random() * 0.6 + 0.1;
+      // Wrap horizontal bounds
+      if (c.x - c.rx > width) c.x = -c.rx;
+      if (c.x + c.rx < 0) c.x = width + c.rx;
+
+      const breathingAlpha = c.alpha * (0.85 + 0.15 * Math.sin(time * 0.5 + c.phase));
+
+      const grad = ctx.createRadialGradient(c.x, c.y, c.rx * 0.1, c.x, c.y, c.rx);
+      if (isHelios) {
+        // Helios: Warm golden sunlit morning clouds
+        grad.addColorStop(0, `rgba(251, 146, 60, ${breathingAlpha * 0.6})`);
+        grad.addColorStop(0.45, `rgba(254, 215, 170, ${breathingAlpha * 0.35})`);
+        grad.addColorStop(1, "rgba(254, 243, 199, 0)");
+      } else {
+        // Nyx: Starlight & moonlit violet cloud reflection
+        grad.addColorStop(0, `rgba(139, 92, 246, ${breathingAlpha * 0.45})`);
+        grad.addColorStop(0.5, `rgba(56, 189, 248, ${breathingAlpha * 0.25})`);
+        grad.addColorStop(1, "rgba(15, 23, 42, 0)");
       }
 
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.ellipse(c.x, c.y, c.rx, c.ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 2. Render Twinkling Stars (visible in Nyx, subtle in Helios)
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      s.phase += s.twinkleSpeed;
+      const currentAlpha = Math.max(0.1, s.alpha * (0.5 + 0.5 * Math.sin(s.phase)));
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+
+      if (isHelios) {
+        ctx.fillStyle = `rgba(234, 88, 12, ${currentAlpha * 0.4})`;
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "rgba(167, 139, 250, 0.7)";
+      }
+      ctx.fill();
+    }
+
+    animationFrameId = requestAnimationFrame(render);
+  };
+
+  render();
+
+  return () => {
+    cancelAnimationFrame(animationFrameId);
+    window.removeEventListener("resize", resizeHandler);
+  };
+}
+
+/**
+ * Deep Void Constellation Galaxy Background for MemoryGraphView
+ * Minimalist deep-field galaxy with swirling cosmic dust, gravitational orbit rings, and luminous caustics.
+ */
+export function initGalaxyCanvas(canvas: HTMLCanvasElement): () => void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return () => {};
+
+  let animationFrameId: number;
+  let width = (canvas.width = canvas.parentElement?.clientWidth || 800);
+  let height = (canvas.height = canvas.parentElement?.clientHeight || 480);
+
+  const resizeHandler = () => {
+    width = canvas.width = canvas.parentElement?.clientWidth || 800;
+    height = canvas.height = canvas.parentElement?.clientHeight || 480;
+  };
+  window.addEventListener("resize", resizeHandler);
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  // Stardust orbital particles
+  interface CosmicParticle {
+    orbitRadius: number;
+    angle: number;
+    speed: number;
+    size: number;
+    alpha: number;
+    color: string;
+  }
+
+  const cosmicParticles: CosmicParticle[] = [];
+  const pCount = 54;
+  const palette = [
+    "rgba(249, 115, 22, ", // Sun orange
+    "rgba(56, 189, 248, ", // Cyan
+    "rgba(168, 85, 247, ", // Violet
+    "rgba(255, 255, 255, ", // Pure starlight
+  ];
+
+  for (let i = 0; i < pCount; i++) {
+    cosmicParticles.push({
+      orbitRadius: 40 + Math.random() * 280,
+      angle: Math.random() * Math.PI * 2,
+      speed: (0.002 + Math.random() * 0.004) * (Math.random() > 0.5 ? 1 : -1),
+      size: Math.random() * 1.8 + 0.6,
+      alpha: Math.random() * 0.7 + 0.2,
+      color: palette[Math.floor(Math.random() * palette.length)],
+    });
+  }
+
+  let angleOffset = 0;
+
+  const render = () => {
+    ctx.clearRect(0, 0, width, height);
+    angleOffset += 0.0015;
+
+    // 1. Central Galactic Core Caustic Glow
+    const coreGrad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, 260);
+    coreGrad.addColorStop(0, "rgba(249, 115, 22, 0.14)");
+    coreGrad.addColorStop(0.35, "rgba(56, 189, 248, 0.06)");
+    coreGrad.addColorStop(0.7, "rgba(139, 92, 246, 0.03)");
+    coreGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    ctx.fillStyle = coreGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Gravitational Concentric Orbit Rings
+    const orbitRings = [110, 190, 260];
+    ctx.lineWidth = 1;
+    for (let r of orbitRings) {
+      ctx.beginPath();
+      ctx.arc(width / 2, height / 2, r, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
+      ctx.setLineDash([4, 8]);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // 3. Orbiting Cosmic Stardust Particles
+    for (let i = 0; i < cosmicParticles.length; i++) {
+      const p = cosmicParticles[i];
+      p.angle += p.speed;
+
+      const px = width / 2 + p.orbitRadius * Math.cos(p.angle);
+      const py = height / 2 + (p.orbitRadius * 0.65) * Math.sin(p.angle); // Elliptical galaxy perspective
+
+      ctx.beginPath();
+      ctx.arc(px, py, p.size, 0, Math.PI * 2);
       ctx.fillStyle = `${p.color}${p.alpha})`;
-      ctx.shadowBlur = 6;
-      ctx.shadowColor = p.color === colors[0] ? "#f59e0b" : "#38bdf8";
       ctx.fill();
     }
 

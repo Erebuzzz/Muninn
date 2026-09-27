@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { GraphData, GraphNode, GraphEdge } from "@/lib/types";
 import { api } from "@/lib/api";
 import { RavenLogo } from "@/components/brand/RavenLogo";
-import { elasticRecoil } from "@/lib/animations";
+import { elasticRecoil, initGalaxyCanvas } from "@/lib/animations";
+import { MythicIcon } from "@/components/common/MythicIcons";
 
 interface MemoryGraphViewProps {
   onSelectClaim?: (claimId: string) => void;
@@ -34,6 +35,14 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const galaxyCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (viewMode === "spatial" && galaxyCanvasRef.current) {
+      const cleanup = initGalaxyCanvas(galaxyCanvasRef.current);
+      return cleanup;
+    }
+  }, [viewMode]);
 
   const fetchGraph = async () => {
     try {
@@ -249,6 +258,12 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
           onMouseUp={handleMouseUp}
           className="relative w-full h-[460px] my-3 rounded-xl bg-slate-950/90 border border-slate-800/80 overflow-hidden cursor-grab active:cursor-grabbing select-none"
         >
+          {/* Deep Void Cosmic Galaxy Background */}
+          <canvas
+            ref={galaxyCanvasRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          />
+
           {/* Spatial Canvas Controls Overlay */}
           <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-lg p-1 shadow-lg">
             <button
