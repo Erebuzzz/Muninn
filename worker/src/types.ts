@@ -6,10 +6,33 @@ export interface Bindings {
   LLM_GATEWAY_MODEL?: string;
   DEFAULT_USER_ID?: string;
   CORS_ORIGINS?: string;
+  JWT_SECRET?: string;
+}
+
+export interface UserRecord {
+  id: string;
+  email: string;
+  name?: string | null;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    name?: string | null;
+  };
+}
+
+export interface AppVariables {
+  userId?: string;
+  user?: UserRecord;
 }
 
 export interface AppEnv {
   Bindings: Bindings;
+  Variables: AppVariables;
 }
 
 export interface EntityRecord {

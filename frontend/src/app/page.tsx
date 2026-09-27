@@ -9,8 +9,10 @@ import { SensitivityModal } from "@/components/review/SensitivityModal";
 import { ClaimInspector } from "@/components/provenance/ClaimInspector";
 import { api } from "@/lib/api";
 import { Conversation, Claim } from "@/lib/types";
+import { useAuth } from "@/lib/authContext";
 
 export default function DashboardPage() {
+  const { user, openAuthModal, loginDemo } = useAuth();
   const [sessions, setSessions] = useState<Conversation[]>([]);
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [claimsCount, setClaimsCount] = useState<number>(0);
@@ -35,7 +37,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, user?.id]);
 
   const handleExtractionFinished = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -43,6 +45,40 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Auth Banner for Guest State */}
+      {!user && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-[#11151c] to-[#11151c] border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Private Living Memory Workspace</p>
+              <p className="text-xs text-[#8b9bb4]">
+                Sign in to isolate your captured decisions, tasks, and graphs, or explore the pre-seeded engineer demo.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => loginDemo()}
+              className="px-3 py-1.5 text-xs font-mono text-white bg-[#1a2230] hover:bg-[#222c3e] border border-[#2a374c] rounded-lg transition"
+            >
+              1-Click Demo
+            </button>
+            <button
+              onClick={openAuthModal}
+              className="px-3.5 py-1.5 text-xs font-semibold text-[#0a0d12] bg-amber-400 hover:bg-amber-300 rounded-lg transition shadow"
+            >
+              Sign In / Register
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Stats Overview */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-[#11151c] border border-[#1e2634] rounded-xl p-4">
