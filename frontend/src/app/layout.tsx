@@ -1,12 +1,29 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { AuthHeaderButton } from "@/components/auth/AuthHeaderButton";
+import { RavenLogo } from "@/components/brand/RavenLogo";
+
+export const viewport: Viewport = {
+  themeColor: "#06080c",
+};
 
 export const metadata: Metadata = {
   title: "Muninn | Living Memory for Engineering & Work",
-  description: "Captures conversations you choose, connects decisions, tasks, and people, and resurfaces unfinished work.",
+  description:
+    "Mythic memory architecture for engineering and work. Captures conversations, tracks ground-truth provenance, and proactively resurfaces unfinished decisions.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  openGraph: {
+    title: "Muninn | Living Memory for Engineering & Work",
+    description:
+      "Captures conversations you choose, connects decisions, tasks, and people, and resurfaces unfinished work with verifiable provenance.",
+    siteName: "Muninn",
+  },
 };
 
 export default function RootLayout({
@@ -16,38 +33,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#0a0d12] text-[#e6edf3] antialiased flex flex-col font-sans selection:bg-amber-500/20 selection:text-amber-200">
+      <body className="min-h-screen bg-[#06080c] text-[#e6edf3] antialiased flex flex-col font-sans selection:bg-amber-500/20 selection:text-amber-200">
         <AuthProvider>
           <AuthModal />
-          <header className="border-b border-[#1c2330] bg-[#0e1219]/80 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center justify-between">
+          <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Muninn Raven Geometric Icon */}
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              </div>
+              <RavenLogo size={36} animated={true} glow={true} />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-base tracking-tight text-white">Muninn</span>
-                  <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#1c2330] text-amber-400/90 border border-amber-500/20">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-amber-400 border border-amber-500/30">
                     LIVING MEMORY
                   </span>
                 </div>
-                <p className="text-[11px] text-[#8b9bb4] hidden sm:block">
-                  Capturing thought, tracking provenance, resurfacing unfinished work
+                <p className="text-[11px] text-slate-400 hidden sm:block">
+                  Odin&apos;s raven scouting thought, tracking provenance, resurfacing unfinished work
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4 text-xs">
-              <div className="flex items-center gap-1.5 text-[#8b9bb4]">
+              <div className="flex items-center gap-1.5 text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono text-[11px] hidden md:inline">Capture Engine Active</span>
+                <span className="font-mono text-[11px] hidden md:inline">Memory Vault: Active</span>
               </div>
-              <div className="h-4 w-[1px] bg-[#1c2330]" />
+              <div className="h-4 w-[1px] bg-slate-800" />
               <AuthHeaderButton />
             </div>
           </header>
@@ -56,14 +66,14 @@ export default function RootLayout({
             {children}
           </main>
 
-          <footer className="border-t border-[#1c2330] bg-[#0c0f15] py-4 px-6 text-xs text-[#8b9bb4]">
+          <footer className="border-t border-slate-800/80 bg-slate-950/90 py-4 px-6 text-xs text-slate-400">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span>
-                  Muninn: <em className="text-white/80">You decide what gets heard. We decide what is worth remembering.</em>
+                  Muninn: <em className="text-slate-300">You decide what gets heard. We decide what is worth remembering.</em>
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-[#5a6a84]">
+              <div className="flex items-center gap-3 text-[11px] text-slate-500">
                 <span className="font-mono text-emerald-400/90">Privacy Promise: Consent First</span>
                 <span>•</span>
                 <span className="font-mono">Verifiable Provenance</span>
