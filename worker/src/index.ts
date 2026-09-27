@@ -7,6 +7,7 @@ import { reviewRouter } from "./routes/review";
 import { graphRouter } from "./routes/graph";
 import { resurfacingRouter } from "./routes/resurfacing";
 import { chatRouter } from "./routes/chat";
+import { authRouter } from "./routes/auth";
 
 const app = new Hono<AppEnv>();
 
@@ -41,6 +42,7 @@ app.get("/health", healthHandler);
 app.get("/api/health", healthHandler);
 
 const api = new Hono<AppEnv>();
+api.route("/auth", authRouter);
 api.route("/sessions", sessionsRouter);
 api.route("/claims", claimsRouter);
 api.route("/review", reviewRouter);

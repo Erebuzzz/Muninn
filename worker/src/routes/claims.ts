@@ -1,12 +1,13 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
+import { getAuthUserId } from "../services/auth";
 
 export const claimsRouter = new Hono<AppEnv>();
 
 claimsRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
   const entityName = c.req.query("entity_name");
   const claimType = c.req.query("claim_type");

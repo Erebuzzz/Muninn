@@ -1,12 +1,13 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
+import { getAuthUserId } from "../services/auth";
 
 export const reviewRouter = new Hono<AppEnv>();
 
 reviewRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
 
   let query = `
@@ -111,7 +112,7 @@ reviewRouter.post("/", async (c) => {
 
 reviewRouter.post("/discard-all-pending", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const conversationId = c.req.query("conversation_id");
 
   let updateSql = `

@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
 import { ResurfacingService } from "../services/resurfacing";
+import { getAuthUserId } from "../services/auth";
 
 export const resurfacingRouter = new Hono<AppEnv>();
 
 resurfacingRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const includeDismissed = c.req.query("include_dismissed") === "true";
   const limit = Math.min(Math.max(parseInt(c.req.query("limit") || "20", 10), 1), 50);
 
@@ -57,7 +58,7 @@ resurfacingRouter.post("/:id/dismiss", async (c) => {
 
 resurfacingRouter.post("/evaluate", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
 
   const events = await ResurfacingService.evaluateResurfacing(sql, c.env, userId);
   return c.json({ status: "ok", events_generated: events.length });

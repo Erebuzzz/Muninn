@@ -1,4 +1,5 @@
-import { Claim, ResurfacingItem, Conversation } from "./types";
+import { Preferences } from "@capacitor/preferences";
+import { Claim, ResurfacingItem, Conversation, User } from "./types";
 
 export interface DraftTurn {
   id: string;
@@ -27,9 +28,75 @@ class LocalStorageManager {
   private OFFLINE_QUEUE_KEY = "muninn_offline_queue";
   private CACHED_CLAIMS_KEY = "muninn_cached_claims";
   private CACHED_RESURFACING_KEY = "muninn_cached_resurfacing";
+  private AUTH_TOKEN_KEY = "muninn_auth_token";
+  private AUTH_USER_KEY = "muninn_auth_user";
+  private inMemoryToken: string | null = null;
+  private inMemoryUser: User | null = null;
 
   private isClient(): boolean {
     return typeof window !== "undefined";
+  }
+
+  async initAuth(): Promise<{ token: string | null; user: User | null }> {
+    if (!this.isClient()) return { token: null, user: null };
+    try {
+      const { value: tokenVal } = await Preferences.get({ key: this.AUTH_TOKEN_KEY });
+      const { value: userVal } = await Preferences.get({ key: this.AUTH_USER_KEY });
+      this.inMemoryToken = tokenVal || localStorage.getItem(this.AUTH_TOKEN_KEY);
+      const userRaw = userVal || localStorage.getItem(this.AUTH_USER_KEY);
+      this.inMemoryUser = userRaw ? JSON.parse(userRaw) : null;
+      return { token: this.inMemoryToken, user: this.inMemoryUser };
+    } catch {
+      this.inMemoryToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
+      const userRaw = localStorage.getItem(this.AUTH_USER_KEY);
+      this.inMemoryUser = userRaw ? JSON.parse(userRaw) : null;
+      return { token: this.inMemoryToken, user: this.inMemoryUser };
+    }
+  }
+
+  async saveAuth(token: string, user: User): Promise<void> {
+    this.inMemoryToken = token;
+    this.inMemoryUser = user;
+    if (!this.isClient()) return;
+    try {
+      localStorage.setItem(this.AUTH_TOKEN_KEY, token);
+      localStorage.setItem(this.AUTH_USER_KEY, JSON.stringify(user));
+      await Preferences.set({ key: this.AUTH_TOKEN_KEY, value: token });
+      await Preferences.set({ key: this.AUTH_USER_KEY, value: JSON.stringify(user) });
+    } catch (e) {
+      console.warn("Preferences write failed:", e);
+    }
+  }
+
+  getAuthToken(): string | null {
+    if (this.inMemoryToken) return this.inMemoryToken;
+    if (!this.isClient()) return null;
+    return localStorage.getItem(this.AUTH_TOKEN_KEY);
+  }
+
+  getAuthUser(): User | null {
+    if (this.inMemoryUser) return this.inMemoryUser;
+    if (!this.isClient()) return null;
+    try {
+      const raw = localStorage.getItem(this.AUTH_USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async clearAuth(): Promise<void> {
+    this.inMemoryToken = null;
+    this.inMemoryUser = null;
+    if (!this.isClient()) return;
+    try {
+      localStorage.removeItem(this.AUTH_TOKEN_KEY);
+      localStorage.removeItem(this.AUTH_USER_KEY);
+      await Preferences.remove({ key: this.AUTH_TOKEN_KEY });
+      await Preferences.remove({ key: this.AUTH_USER_KEY });
+    } catch (e) {
+      console.warn("Preferences remove failed:", e);
+    }
   }
 
   saveDraft(draft: DraftSession): void {

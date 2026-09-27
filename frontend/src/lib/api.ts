@@ -6,6 +6,8 @@ import {
   ChatResponse,
   GraphData,
   Relationship,
+  User,
+  AuthResponse,
 } from "./types";
 import { localStore } from "./storage";
 
@@ -27,13 +29,20 @@ function getBaseUrl(): string {
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${getBaseUrl()}${endpoint}`;
+  const token = localStore.getAuthToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((options?.headers as Record<string, string>) || {}),
+  };
+
+  if (token && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   try {
     const res = await fetch(url, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options?.headers || {}),
-      },
+      headers,
     });
 
     if (!res.ok) {
@@ -162,9 +171,16 @@ export const api = {
     const formData = new FormData();
     formData.append("audio", audioBlob, "quick-note.wav");
 
+    const token = localStore.getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const baseUrl = getBaseUrl();
     const res = await fetch(`${baseUrl}/sessions/quick-note`, {
       method: "POST",
+      headers,
       body: formData,
     });
 
@@ -260,5 +276,32 @@ export const api = {
 
   async getDependencies(claimId: string): Promise<any[]> {
     return request(`/graph/dependencies/${claimId}`);
+  },
+
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const res = await request<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    await localStore.saveAuth(res.token, res.user);
+    return res;
+  },
+
+  async register(email: string, password: string, name?: string): Promise<AuthResponse> {
+    const res = await request<AuthResponse>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email, password, name }),
+    });
+    await localStore.saveAuth(res.token, res.user);
+    return res;
+  },
+
+  async getMe(): Promise<User> {
+    const res = await request<{ user: User }>("/auth/me");
+    return res.user;
+  },
+
+  async logout(): Promise<void> {
+    await localStore.clearAuth();
   },
 };

@@ -5,12 +5,13 @@ import { VoiceAgentService } from "../services/voice-agent";
 import { ExtractionService } from "../services/extraction";
 import { ResurfacingService } from "../services/resurfacing";
 import { SyncSTTService } from "../services/sync-stt";
+import { getAuthUserId } from "../services/auth";
 
 export const sessionsRouter = new Hono<AppEnv>();
 
 sessionsRouter.get("/token", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const expiresIn = parseInt(c.req.query("expires_in") || "300", 10);
   const maxDuration = parseInt(c.req.query("max_duration") || "8640", 10);
 
@@ -27,7 +28,8 @@ sessionsRouter.post("/", async (c) => {
     raw_transcript?: any;
   }>();
 
-  const userId = body.user_id || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const authUserId = await getAuthUserId(c);
+  const userId = body.user_id || authUserId;
   const id = crypto.randomUUID();
   const title = body.title || `Live Muninn Session ${new Date().toLocaleTimeString()}`;
   const nowIso = new Date().toISOString();
@@ -52,7 +54,7 @@ sessionsRouter.post("/", async (c) => {
 
 sessionsRouter.get("/", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
   const limit = Math.min(Math.max(parseInt(c.req.query("limit") || "20", 10), 1), 100);
   const offset = Math.max(parseInt(c.req.query("offset") || "0", 10), 0);
 
@@ -251,7 +253,8 @@ sessionsRouter.post("/extract-raw", async (c) => {
     return c.json({ detail: "transcript_text is required" }, 400);
   }
 
-  const userId = payload.user_id || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const authUserId = await getAuthUserId(c);
+  const userId = payload.user_id || authUserId;
   const convId = crypto.randomUUID();
   const title = payload.title || `Captured Conversation ${new Date().toLocaleTimeString()}`;
   const nowIso = new Date().toISOString();
@@ -278,7 +281,7 @@ sessionsRouter.post("/extract-raw", async (c) => {
 
 sessionsRouter.post("/quick-note", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
-  const userId = c.req.query("user_id") || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const userId = await getAuthUserId(c);
 
   let audioBytes: ArrayBuffer;
   let mimeType = "audio/wav";
