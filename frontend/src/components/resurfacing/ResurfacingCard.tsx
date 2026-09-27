@@ -54,15 +54,15 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="bg-slate-900/90 border border-slate-800 hover:border-orange-500/40 rounded-xl p-4 transition-all duration-300 shadow-sm relative group hover:shadow-lg hover:shadow-orange-500/5"
+      className="bg-slate-900/90 border border-slate-800 hover:border-orange-500/40 rounded-2xl p-4 transition-all duration-300 shadow-sm relative group hover:shadow-lg hover:shadow-orange-500/5"
     >
       <div className="flex items-start justify-between gap-3 mb-2">
-        <span className={`text-[9.5px] font-mono px-2 py-0.5 rounded border uppercase tracking-wider font-semibold ${badge.className}`}>
+        <span className={`text-[9.5px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-semibold ${badge.className}`}>
           {badge.label}
         </span>
         <button
           onClick={() => onDismiss(item.id)}
-          className="text-slate-500 hover:text-rose-400 text-xs p-1 rounded transition"
+          className="text-slate-500 hover:text-rose-400 text-xs p-1.5 rounded-lg transition"
           title="Dismiss notification"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -77,7 +77,7 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
       </p>
 
       {item.subject_claim_text && (
-        <div className="text-[11px] font-mono text-slate-400 bg-slate-950/80 border border-slate-800/80 p-2.5 rounded-lg mb-3">
+        <div className="text-[11px] font-mono text-slate-400 bg-slate-950/80 border border-slate-800/80 p-2.5 rounded-xl mb-3">
           <span className="text-slate-500">Linked Claim: </span>
           <span className="text-slate-300">&ldquo;{item.subject_claim_text}&rdquo;</span>
         </div>

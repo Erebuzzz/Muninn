@@ -61,7 +61,7 @@ export default function DocsPage() {
           <h1 className="text-sm font-serif font-bold text-slate-900 dark:text-white">
             Muninn Codex
           </h1>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
             ARCHITECTURAL REFERENCE
           </span>
         </div>
@@ -84,7 +84,7 @@ export default function DocsPage() {
             <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-slate-200 uppercase tracking-widest">
               Codex Index
             </span>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
               9 SECTIONS
             </span>
           </div>
@@ -480,7 +480,7 @@ SELECT * FROM claim_hierarchy ORDER BY depth;`}
                       <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
                         Web Browser Mode
                       </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-700 dark:text-sky-300">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-700 dark:text-sky-300">
                         EPHEMERAL GUEST
                       </span>
                     </div>
@@ -496,7 +496,7 @@ SELECT * FROM claim_hierarchy ORDER BY depth;`}
                       <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
                         Android Tablet APK
                       </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                         LOCAL HARDWARE
                       </span>
                     </div>
@@ -578,7 +578,7 @@ SELECT * FROM claim_hierarchy ORDER BY depth;`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30">
                             {endpoint.method}
                           </span>
                           <span className="text-xs font-bold text-slate-900 dark:text-slate-100">

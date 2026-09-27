@@ -58,14 +58,14 @@ export function AuthModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div
-        className="glass-window w-full max-w-md p-6 shadow-2xl relative"
+        className="glass-window rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden"
         role="dialog"
         aria-modal="true"
       >
         <button
           onClick={closeAuthModal}
           disabled={submitting}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-800"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white transition p-1.5 rounded-full hover:bg-slate-800"
           aria-label="Close modal"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -93,14 +93,14 @@ export function AuthModal() {
         </div>
 
         {/* Mode Switcher */}
-        <div className="flex rounded-xl bg-slate-900 p-1 mb-6 border border-slate-800">
+        <div className="flex rounded-full bg-slate-900 p-1 mb-6 border border-slate-800">
           <button
             type="button"
             onClick={() => {
               setMode("login");
               setError(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition ${
+            className={`flex-1 py-1.5 text-xs font-medium rounded-full transition ${
               mode === "login"
                 ? "bg-slate-800 text-white shadow-sm"
                 : "text-slate-400 hover:text-white"
@@ -114,7 +114,7 @@ export function AuthModal() {
               setMode("register");
               setError(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition ${
+            className={`flex-1 py-1.5 text-xs font-medium rounded-full transition ${
               mode === "register"
                 ? "bg-slate-800 text-white shadow-sm"
                 : "text-slate-400 hover:text-white"
@@ -210,7 +210,7 @@ export function AuthModal() {
           disabled={submitting}
           className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition flex items-center justify-center gap-2"
         >
-          <span>Curated Demo Seed (5 sessions)</span>
+          <span>Curated Sample Vault (3 sessions)</span>
         </button>
       </div>
     </div>

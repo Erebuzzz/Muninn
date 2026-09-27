@@ -48,12 +48,12 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="glass-window max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div className="glass-window rounded-2xl overflow-hidden max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-slate-800/60">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded">
+              <span className="font-mono text-xs text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-0.5 rounded-full">
                 PROVENANCE INSPECTOR
               </span>
               <span className="font-mono text-[10px] text-slate-400">
@@ -64,7 +64,7 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
               Source Conversation & Dependency Chain
             </h2>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
+          <button onClick={onClose} className="text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -83,7 +83,7 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
               {/* Claim Statement */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="capitalize font-mono px-2 py-0.5 rounded bg-slate-950/80 text-orange-400 border border-slate-800">
+                  <span className="capitalize font-mono px-2 py-0.5 rounded-full bg-slate-950/80 text-orange-400 border border-slate-800">
                     {data.claim.type}
                   </span>
                   <span className="text-slate-400 font-mono text-[10px]">
@@ -112,7 +112,7 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
                     {data.claim.entities.map((e) => (
                       <span
                         key={e.id}
-                        className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-950 text-sky-400 border border-slate-800"
+                        className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-sky-400 border border-slate-800"
                       >
                         {e.name} ({e.type})
                       </span>
@@ -137,11 +137,11 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
                     {dependencies.map((dep, idx) => (
                       <div
                         key={idx}
-                        className="p-2.5 rounded bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-2"
+                        className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-2"
                       >
                         <div className="text-xs">
                           <span className="text-white">{dep.from_text}</span>
-                          <span className="mx-2 px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 font-mono text-[10px] border border-orange-500/20">
+                          <span className="mx-2 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 font-mono text-[10px] border border-orange-500/20">
                             {dep.relation_type}
                           </span>
                           <span className="text-slate-300">{dep.to_text}</span>
@@ -162,7 +162,7 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
         <div className="pt-3 border-t border-slate-800/60 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs transition border border-slate-800"
+            className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs transition border border-slate-800 font-mono"
           >
             Close
           </button>

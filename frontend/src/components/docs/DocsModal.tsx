@@ -55,7 +55,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
                 <h2 id="docs-title" className="text-base font-bold text-white tracking-tight">
                   Muninn Codex & Interactive Walkthrough
                 </h2>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-orange-400 border border-orange-500/30">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 text-orange-400 border border-orange-500/30">
                   LIVING CODEX
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition"
+            className="text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition"
             aria-label="Close modal"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -254,19 +254,19 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
               <div className="space-y-2 text-xs">
                 <span className="font-mono text-slate-400 font-semibold uppercase text-[11px]">Key Technical Specifications:</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-orange-400 block">Frontend Stack</span>
                     <span className="text-slate-300">Next.js 15, Tailwind, Anime.js, Web Audio API</span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-sky-400 block">Backend Runtime</span>
                     <span className="text-slate-300">TypeScript + Hono (Lightweight Edge Ready)</span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-emerald-400 block">Mobile APK</span>
                     <span className="text-slate-300">Capacitor 8 Android Tablet, Hardware Local-First</span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                     <span className="text-purple-400 block">Voice Engine</span>
                     <span className="text-slate-300">AssemblyAI Realtime 24kHz AudioWorklet</span>
                   </div>
@@ -281,7 +281,7 @@ export function DocsModal({ isOpen, onClose }: DocsModalProps) {
           <span className="font-mono text-[11px]">Muninn: Memory & Mind</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono rounded-lg transition"
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono rounded-xl transition"
           >
             Close Codex
           </button>

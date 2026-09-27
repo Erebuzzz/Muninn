@@ -85,7 +85,7 @@ export const Waveform: React.FC<WaveformProps> = ({ isActive, audioData, classNa
         ref={canvasRef}
         width={420}
         height={56}
-        className="w-full max-w-md rounded"
+        className="w-full max-w-md rounded-xl"
       />
     </div>
   );

@@ -9,7 +9,7 @@ export function AuthHeaderButton() {
 
   if (isLoading) {
     return (
-      <div className="w-20 h-7 bg-[#141a24] rounded-lg animate-pulse" />
+      <div className="w-20 h-7 bg-[#141a24] rounded-xl animate-pulse" />
     );
   }
 
@@ -17,7 +17,7 @@ export function AuthHeaderButton() {
     return (
       <button
         onClick={openAuthModal}
-        className="px-3 py-1.5 text-xs font-medium text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg transition flex items-center gap-1.5"
+        className="px-3.5 py-1.5 text-xs font-mono font-medium text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-xl transition flex items-center gap-1.5"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -36,7 +36,7 @@ export function AuthHeaderButton() {
     <div className="relative">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-white transition"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-white transition"
       >
         <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-[10px]">
           {initial}
@@ -58,7 +58,7 @@ export function AuthHeaderButton() {
       </button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-56 glass-window shadow-xl py-2 z-50 animate-fade-in">
+        <div className="absolute right-0 mt-2 w-56 glass-window rounded-2xl overflow-hidden shadow-2xl py-2 z-50 animate-fade-in border border-slate-300 dark:border-slate-800">
           <div className="px-3.5 py-2 border-b border-slate-800/60">
             <p className="text-xs font-semibold text-white truncate">{displayName}</p>
             <p className="text-[11px] text-slate-400 truncate font-mono">{user.email}</p>

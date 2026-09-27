@@ -77,7 +77,7 @@ export const BackendStatusPill: React.FC<BackendStatusPillProps> = ({
       <button
         onClick={handleReconnect}
         disabled={checking}
-        className="px-1.5 py-0.5 rounded bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold transition disabled:opacity-50"
+        className="px-2 py-0.5 rounded-full bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold transition disabled:opacity-50"
       >
         {checking ? "Checking..." : "Reconnect ↻"}
       </button>

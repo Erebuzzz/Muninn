@@ -186,7 +186,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
               <h2 className="text-xs font-mono font-semibold text-slate-200 uppercase tracking-widest">
                 Relational Memory Constellation
               </h2>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-sky-400">
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700/80 text-sky-400">
                 {graphData.nodes.length} NODES • {graphData.edges.length} CONDUITS
               </span>
             </div>
@@ -199,10 +199,10 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
         {/* View Mode Toggle and Zoom Controls */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Spatial vs Grid Toggle */}
-          <div className="flex items-center rounded-lg bg-slate-900/90 border border-slate-800 p-0.5">
+          <div className="flex items-center rounded-full bg-slate-900/90 border border-slate-800 p-0.5">
             <button
               onClick={() => setViewMode("spatial")}
-              className={`px-2.5 py-1 rounded text-[11px] font-mono transition ${
+              className={`px-3 py-1 rounded-full text-[11px] font-mono transition ${
                 viewMode === "spatial"
                   ? "bg-orange-500 text-slate-950 font-semibold shadow"
                   : "text-slate-400 hover:text-slate-200"
@@ -212,7 +212,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`px-2.5 py-1 rounded text-[11px] font-mono transition ${
+              className={`px-3 py-1 rounded-full text-[11px] font-mono transition ${
                 viewMode === "grid"
                   ? "bg-orange-500 text-slate-950 font-semibold shadow"
                   : "text-slate-400 hover:text-slate-200"
@@ -228,7 +228,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
               <button
                 key={type}
                 onClick={() => setSelectedFilter(type)}
-                className={`text-[10px] font-mono uppercase px-2 py-1 rounded transition border ${
+                className={`text-[10px] font-mono uppercase px-2.5 py-1 rounded-full transition border ${
                   selectedFilter === type
                     ? "bg-slate-800 text-orange-400 border-orange-500/60 font-semibold"
                     : "bg-slate-900/70 text-slate-400 border-slate-800 hover:text-slate-200"
@@ -256,7 +256,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className="relative w-full h-[460px] my-3 rounded-xl bg-slate-950/90 border border-slate-800/80 overflow-hidden cursor-grab active:cursor-grabbing select-none"
+          className="relative w-full h-[460px] my-3 rounded-2xl bg-slate-950/90 border border-slate-800/80 overflow-hidden cursor-grab active:cursor-grabbing select-none"
         >
           {/* Deep Void Cosmic Galaxy Background */}
           <canvas
@@ -265,24 +265,24 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
           />
 
           {/* Spatial Canvas Controls Overlay */}
-          <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-lg p-1 shadow-lg">
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-lg">
             <button
               onClick={() => handleZoom(0.15)}
-              className="w-7 h-7 flex items-center justify-center text-xs font-mono text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded transition"
+              className="w-7 h-7 flex items-center justify-center text-xs font-mono text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded-lg transition"
               title="Zoom In"
             >
               +
             </button>
             <button
               onClick={() => handleZoom(-0.15)}
-              className="w-7 h-7 flex items-center justify-center text-xs font-mono text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded transition"
+              className="w-7 h-7 flex items-center justify-center text-xs font-mono text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded-lg transition"
               title="Zoom Out"
             >
               -
             </button>
             <button
               onClick={resetViewport}
-              className="px-2 h-7 flex items-center justify-center text-[10px] font-mono text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded transition"
+              className="px-2 h-7 flex items-center justify-center text-[10px] font-mono text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition"
               title="Reset Viewport"
             >
               1:1
@@ -391,7 +391,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
               onClick={() => resetViewport()}
             >
               <RavenLogo size={46} animated={true} glow={true} />
-              <span className="font-mono text-[9px] uppercase tracking-wider text-orange-400 mt-1 font-semibold bg-slate-950/80 px-1.5 py-0.5 rounded border border-orange-500/30">
+              <span className="font-mono text-[9px] uppercase tracking-wider text-orange-400 mt-1 font-semibold bg-slate-950/80 px-2 py-0.5 rounded-full border border-orange-500/30">
                 MUNINN CORE
               </span>
             </div>
@@ -439,7 +439,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
                         {node.claim_type}
                       </span>
                       {node.status && (
-                        <span className="text-[8px] font-mono px-1 rounded bg-slate-900 text-slate-400">
+                        <span className="text-[8px] font-mono px-1.5 rounded-full bg-slate-900 text-slate-400">
                           {node.status}
                         </span>
                       )}
@@ -491,7 +491,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
               {entityNodes.map((ent) => (
                 <span
                   key={ent.id}
-                  className="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-900 border border-slate-800 text-sky-300 flex items-center gap-1.5"
+                  className="px-3 py-1 rounded-full text-xs font-mono bg-slate-900 border border-slate-800 text-sky-300 flex items-center gap-1.5"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
                   {ent.label}
@@ -523,7 +523,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
                       </span>
                       {claim.status && (
                         <span
-                          className={`font-mono text-[9px] px-1.5 py-0.5 rounded ${
+                          className={`font-mono text-[9px] px-2 py-0.5 rounded-full ${
                             claim.status === "blocked"
                               ? "bg-rose-500/20 text-rose-300"
                               : "bg-emerald-500/20 text-emerald-300"

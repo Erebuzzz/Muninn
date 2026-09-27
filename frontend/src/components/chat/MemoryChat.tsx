@@ -55,7 +55,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
   };
 
   return (
-    <div className="glass-window p-5 flex flex-col h-[480px] relative overflow-hidden">
+    <div className="glass-window rounded-2xl p-5 flex flex-col h-[480px] relative overflow-hidden shadow-2xl">
       {/* Decorative Norse Runes Horizon Line */}
       <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
 
@@ -66,7 +66,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
             <h2 className="text-xs font-mono font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-widest">
               Ground-Truth Oracle
             </h2>
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 dark:bg-slate-900 border border-orange-500/30 dark:border-slate-700/80 text-orange-600 dark:text-orange-400">
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-orange-500/10 dark:bg-slate-900 border border-orange-500/30 dark:border-slate-700/80 text-orange-600 dark:text-orange-400">
               CITATIONS VERIFIED
             </span>
           </div>
@@ -74,7 +74,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
             Query past discussions with turn-by-turn timestamp provenance
           </p>
         </div>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/10 dark:bg-slate-900 text-sky-700 dark:text-sky-400 border border-sky-500/30 dark:border-slate-800">
+        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-sky-500/10 dark:bg-slate-900 text-sky-700 dark:text-sky-400 border border-sky-500/30 dark:border-slate-800">
           Reasoning Active
         </span>
       </div>
@@ -87,7 +87,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
             className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
           >
             <div
-              className={`max-w-[88%] rounded-xl p-3.5 leading-relaxed shadow-sm ${
+              className={`max-w-[88%] rounded-2xl p-3.5 leading-relaxed shadow-sm ${
                 m.role === "user"
                   ? "bg-orange-500 text-slate-950 font-medium"
                   : "bg-white/80 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200"
@@ -109,7 +109,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({ onInspectCitation }) => 
                           elasticRecoil(e.currentTarget);
                           if (onInspectCitation) onInspectCitation(c.claim_id);
                         }}
-                        className="text-left p-2 rounded-lg bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-orange-500/40 transition flex items-center justify-between group"
+                        className="text-left p-2 rounded-xl bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-orange-500/40 transition flex items-center justify-between group"
                       >
                         <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[260px]">
                           &ldquo;{c.claim_text}&rdquo;

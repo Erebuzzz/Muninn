@@ -351,7 +351,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
               <h2 className="text-xs font-mono font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-widest">
                 Odin&apos;s Ear: Acoustic Capture
               </h2>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 dark:bg-slate-900 border border-orange-500/30 dark:border-slate-700/80 text-orange-600 dark:text-orange-400">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-orange-500/10 dark:bg-slate-900 border border-orange-500/30 dark:border-slate-700/80 text-orange-600 dark:text-orange-400">
                 24kHz PCM
               </span>
             </div>
@@ -368,7 +368,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setManualInputOpen(!manualInputOpen)}
-            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-white/80 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-300 dark:border-slate-700/70 transition shadow-sm"
+            className="text-xs font-mono px-3 py-1.5 rounded-xl bg-white/80 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-300 dark:border-slate-700/70 transition shadow-sm"
           >
             {manualInputOpen ? "Close Scenario" : "Import / Seed Scenario"}
           </button>
@@ -389,27 +389,27 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             type="text"
             value={manualTitle}
             onChange={(e) => setManualTitle(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 mb-2.5 focus:outline-none focus:border-orange-500 text-xs font-mono"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-slate-200 mb-2.5 focus:outline-none focus:border-orange-500 text-xs font-mono"
             placeholder="Conversation Title"
           />
           <textarea
             value={manualTranscript}
             onChange={(e) => setManualTranscript(e.target.value)}
             rows={5}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-200 font-mono text-[11px] mb-3 focus:outline-none focus:border-orange-500 leading-relaxed"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-slate-200 font-mono text-[11px] mb-3 focus:outline-none focus:border-orange-500 leading-relaxed"
             placeholder="Speaker A: We noticed..."
           />
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setManualInputOpen(false)}
-              className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs"
+              className="px-3.5 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-mono"
             >
               Cancel
             </button>
             <button
               onClick={handleManualImport}
               disabled={status === "processing"}
-              className="px-4 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold text-xs transition disabled:opacity-50"
+              className="px-4 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-semibold font-mono text-xs transition disabled:opacity-50"
             >
               Crystallize Memory
             </button>
@@ -430,7 +430,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       </div>
 
       {/* Live Stream Runic Transcript Feed */}
-      <div className="min-h-[140px] max-h-[220px] overflow-y-auto rounded-xl bg-slate-100/80 dark:bg-slate-950/70 border border-slate-200/90 dark:border-slate-800/80 p-3.5 space-y-2.5 shadow-inner">
+      <div className="min-h-[140px] max-h-[220px] overflow-y-auto rounded-2xl bg-slate-100/80 dark:bg-slate-950/70 border border-slate-200/90 dark:border-slate-800/80 p-3.5 space-y-2.5 shadow-inner">
         {turns.length === 0 ? (
           <div className="h-28 flex flex-col items-center justify-center text-xs text-slate-500 italic">
             <span className="font-mono text-slate-400 dark:text-slate-600 text-sm mb-1">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</span>
@@ -469,7 +469,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             <button
               onClick={isRecordingMemo ? stopQuickMemo : startQuickMemo}
               disabled={status === "connecting" || status === "processing"}
-              className={`px-4 py-2 rounded-xl font-mono text-xs font-medium transition shadow-md flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full font-mono text-xs font-medium transition shadow-md flex items-center gap-2 ${
                 isRecordingMemo
                   ? "bg-rose-600 hover:bg-rose-500 text-white animate-pulse"
                   : "bg-white/80 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-300 border border-slate-300 dark:border-slate-700/80"
@@ -486,9 +486,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             <button
               onClick={endSession}
               disabled={status === "processing"}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-semibold transition shadow-md flex items-center gap-2"
+              className="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-semibold transition shadow-md flex items-center gap-2"
             >
-              <span className="w-2 h-2 rounded-sm bg-white" />
+              <span className="w-2 h-2 rounded-full bg-white" />
               End & Crystallize
             </button>
           )}
@@ -512,7 +512,7 @@ function TranscriptTurnRow({ turn }: { turn: TranscriptTurn }) {
   return (
     <div className="text-xs flex items-start gap-2.5">
       <span
-        className={`font-mono font-medium px-2 py-0.5 rounded text-[10px] shrink-0 h-fit border ${
+        className={`font-mono font-medium px-2.5 py-0.5 rounded-full text-[10px] shrink-0 h-fit border ${
           turn.speaker === "Muninn"
             ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30"
             : "bg-sky-500/10 dark:bg-slate-900 text-sky-700 dark:text-sky-300 border-sky-500/20 dark:border-slate-800"

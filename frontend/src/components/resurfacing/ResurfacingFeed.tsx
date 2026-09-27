@@ -69,7 +69,7 @@ export const ResurfacingFeed: React.FC<ResurfacingFeedProps> = ({
 
         <button
           onClick={fetchItems}
-          className="text-xs text-slate-400 hover:text-orange-400 transition p-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800"
+          className="text-xs text-slate-400 hover:text-orange-400 transition p-2 rounded-full hover:bg-slate-900 border border-transparent hover:border-slate-800"
           title="Refresh Radar"
         >
           <MythicIcon.Refresh size={14} />

@@ -202,8 +202,8 @@ export const MythicMicButton: React.FC<MythicMicButtonProps> = ({
           {isRecording ? (
             /* Active Stop / Recording State Icon */
             <div className="flex flex-col items-center">
-              <div className="w-5 h-5 rounded-sm bg-orange-500 shadow-md shadow-orange-500/50 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-[1px] bg-slate-950" />
+              <div className="w-5 h-5 rounded-lg bg-orange-500 shadow-md shadow-orange-500/50 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-slate-950" />
               </div>
               <span className="mt-1 text-[9px] font-mono tracking-wider font-semibold text-orange-400">
                 STOP
