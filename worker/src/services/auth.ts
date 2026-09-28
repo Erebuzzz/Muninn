@@ -91,6 +91,42 @@ export async function verifyAuthToken(
   }
 }
 
+export async function createPasswordResetToken(
+  user: { id: string; email: string },
+  code: string,
+  secret: string
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    code,
+    purpose: "password_reset",
+    iat: now,
+    exp: now + 15 * 60, // 15 minutes
+  };
+  return sign(payload, secret, "HS256");
+}
+
+export async function verifyPasswordResetToken(
+  token: string,
+  secret: string
+): Promise<{ sub: string; email: string; code: string } | null> {
+  try {
+    const payload = await verify(token, secret, "HS256");
+    if (payload && payload.sub && payload.purpose === "password_reset") {
+      return {
+        sub: String(payload.sub),
+        email: String(payload.email || ""),
+        code: String(payload.code || ""),
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Returns the authenticated user's ID if a valid Bearer token is provided.
  * If unauthenticated, returns the public DEFAULT_USER_ID for read-only sample vault access.

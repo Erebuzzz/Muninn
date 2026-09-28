@@ -62,8 +62,14 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
     setOnlineState(true);
     return res.json();
-  } catch (err) {
-    setOnlineState(false);
+  } catch (err: any) {
+    if (
+      err?.name === "TypeError" ||
+      err?.message?.includes("Failed to fetch") ||
+      err?.message?.includes("NetworkError")
+    ) {
+      setOnlineState(false);
+    }
     throw err;
   }
 }
@@ -340,6 +346,25 @@ export const api = {
   async getMe(): Promise<User> {
     const res = await request<{ user: User }>("/auth/me");
     return res.user;
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string; recovery_token?: string; code?: string }> {
+    return await request<{ message: string; recovery_token?: string; code?: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async resetPassword(params: {
+    email: string;
+    code: string;
+    new_password: string;
+    recovery_token?: string;
+  }): Promise<{ success: boolean; message: string }> {
+    return await request<{ success: boolean; message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
   },
 
   async logout(): Promise<void> {

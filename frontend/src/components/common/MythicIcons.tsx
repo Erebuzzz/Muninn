@@ -27,6 +27,15 @@ export const MythicIcon = {
     </svg>
   ),
 
+  // Living Oracle / Conversational Mind
+  Oracle: ({ size = 18, className = "" }: IconProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="12 2 19 6 22 12 19 18 12 22 5 18 2 12 5 6" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.3" />
+      <path d="M12 7v2m0 6v2m-5-5h2m6 0h2" strokeWidth="1.5" />
+    </svg>
+  ),
+
   // Runic Aegis Shield / Privacy
   Shield: ({ size = 18, className = "" }: IconProps) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>

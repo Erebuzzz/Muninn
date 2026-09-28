@@ -45,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="nyx dark">
+    <html lang="en" className="nyx dark" suppressHydrationWarning>
       <body className="min-h-screen antialiased flex flex-col font-sans selection:bg-orange-500/20 selection:text-orange-400">
         <ThemeProvider>
           <AuthProvider>
