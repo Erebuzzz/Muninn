@@ -42,8 +42,10 @@ export function AuthModal() {
         }
         if (res.code) {
           setResetCode(res.code);
+        } else {
+          setResetCode("");
         }
-        setSuccess(res.message || "Verification code dispatched. Please check your inbox or enter code below.");
+        setSuccess(res.message || "A 6-digit verification code has been dispatched. Please check your inbox and enter it below.");
         setMode("reset");
       } else if (mode === "reset") {
         const res = await api.resetPassword({
@@ -231,6 +233,9 @@ export function AuthModal() {
                 placeholder="123456"
                 className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-mono tracking-widest text-center text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition"
               />
+              <p className="mt-1.5 text-[11px] text-slate-400">
+                Check your email inbox (and spam folder) for the 6-digit verification code.
+              </p>
             </div>
           )}
 

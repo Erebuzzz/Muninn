@@ -10,6 +10,7 @@ import {
   createPasswordResetToken,
   verifyPasswordResetToken,
 } from "../services/auth";
+import { sendPasswordResetEmail } from "../services/email";
 import { rateLimiter } from "../middleware/rate-limit";
 
 export const authRouter = new Hono<AppEnv>();
@@ -175,6 +176,25 @@ authRouter.post("/forgot-password", rateLimiter(60000, 3, "auth-forgot"), async 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const secret = getJwtSecret(c.env);
   const recoveryToken = await createPasswordResetToken(user, code, secret);
+
+  if (c.env.RESEND_API_KEY) {
+    const emailResult = await sendPasswordResetEmail(
+      c.env.RESEND_API_KEY,
+      user.email,
+      code,
+      c.env.RESEND_FROM_EMAIL
+    );
+
+    if (!emailResult.success) {
+      console.error(`[Muninn Auth] Failed to dispatch reset email:`, emailResult.error);
+      return c.json({ error: "Failed to dispatch verification email. Please try again shortly." }, 500);
+    }
+
+    return c.json({
+      message: "A 6-digit verification code has been dispatched to your email address.",
+      recovery_token: recoveryToken,
+    });
+  }
 
   console.log(`[Muninn Auth] Password reset code for ${email}: ${code}`);
 

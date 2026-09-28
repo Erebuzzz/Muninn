@@ -7,6 +7,8 @@ export interface Bindings {
   DEFAULT_USER_ID?: string;
   CORS_ORIGINS?: string;
   JWT_SECRET?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
 }
 
 export interface UserRecord {
