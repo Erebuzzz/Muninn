@@ -86,39 +86,50 @@ export class ResurfacingService {
     );
 
     const events: ResurfacingEventRecord[] = [];
+    const candidateIdSet = new Set(candidateRows.map((r) => r.id));
 
     for (const item of surfacedItems) {
-      const subjectId = item.subject_claim_id || candidateRows[0]?.id;
+      let subjectId: string | null = null;
+      if (item.subject_claim_id && candidateIdSet.has(item.subject_claim_id)) {
+        subjectId = item.subject_claim_id;
+      } else if (candidateRows[0]?.id) {
+        subjectId = candidateRows[0].id;
+      }
+
       const eventId = crypto.randomUUID();
       const message = item.message || "Relevant task resurfaced.";
       const reason = item.reason || "stale_and_relevant";
       const nowIso = new Date().toISOString();
 
-      await sql(
-        `INSERT INTO resurfacing_events (id, user_id, triggered_by_conv, subject_claim_id, message, reason, created_at, dismissed)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, false)`,
-        [eventId, userId, currentConvId || null, subjectId || null, message, reason, nowIso]
-      );
-
-      if (subjectId) {
+      try {
         await sql(
-          `UPDATE task_state
-           SET resurfaced_at = array_append(COALESCE(resurfaced_at, '{}'), $1::timestamptz)
-           WHERE claim_id = $2`,
-          [nowIso, subjectId]
+          `INSERT INTO resurfacing_events (id, user_id, triggered_by_conv, subject_claim_id, message, reason, created_at, dismissed)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, false)`,
+          [eventId, userId, currentConvId || null, subjectId, message, reason, nowIso]
         );
-      }
 
-      events.push({
-        id: eventId,
-        user_id: userId,
-        triggered_by_conv: currentConvId || null,
-        subject_claim_id: subjectId,
-        message,
-        reason,
-        created_at: nowIso,
-        dismissed: false,
-      });
+        if (subjectId) {
+          await sql(
+            `UPDATE task_state
+             SET resurfaced_at = array_append(COALESCE(resurfaced_at, '{}'), $1::timestamptz)
+             WHERE claim_id = $2`,
+            [nowIso, subjectId]
+          );
+        }
+
+        events.push({
+          id: eventId,
+          user_id: userId,
+          triggered_by_conv: currentConvId || null,
+          subject_claim_id: subjectId,
+          message,
+          reason,
+          created_at: nowIso,
+          dismissed: false,
+        });
+      } catch (insertErr) {
+        console.warn("[Resurfacing] Event insert error:", insertErr);
+      }
     }
 
     return events;

@@ -71,7 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginDemo = async () => {
-    await login("kshitiz23kumar@gmail.com", "muninn2026");
+    // Curated Sample Vault operates in ephemeral guest sandbox (DEFAULT_USER_ID)
+    await api.logout();
+    setToken(null);
+    setUser(null);
+    setIsAuthModalOpen(false);
   };
 
   const logout = async () => {

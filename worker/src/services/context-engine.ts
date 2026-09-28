@@ -102,7 +102,7 @@ export class ContextEngineService {
               'type', e.type
             )
           ) FILTER (WHERE e.id IS NOT NULL),
-          '[]'
+          '[]'::json
         ) AS entities
       FROM claims c
       JOIN conversations cv ON cv.id = c.conversation_id
@@ -131,8 +131,21 @@ export class ContextEngineService {
       text: string;
       confidence?: string | null;
       status?: string | null;
-      entities: Array<{ id: string; name: string; type: string }>;
+      entities: any;
     }>;
+
+    const parseEntities = (raw: any): Array<{ id: string; name: string; type: string }> => {
+      if (Array.isArray(raw)) return raw.filter((e) => e && e.id && e.name);
+      if (typeof raw === "string") {
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed.filter((e) => e && e.id && e.name) : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    };
 
     const nodes: any[] = [];
     const nodeIds = new Set<string>();
@@ -152,7 +165,8 @@ export class ContextEngineService {
         nodeIds.add(cid);
       }
 
-      for (const ent of c.entities || []) {
+      const ents = parseEntities(c.entities);
+      for (const ent of ents) {
         const eid = `entity_${ent.id}`;
         if (!nodeIds.has(eid)) {
           nodes.push({
@@ -170,29 +184,34 @@ export class ContextEngineService {
     const edges: any[] = [];
 
     if (claimIds.length > 0) {
-      const relationships = (await sql(
-        `SELECT id, from_claim_id, to_claim_id, relation_type
-         FROM relationships
-         WHERE from_claim_id = ANY($1::uuid[]) AND to_claim_id = ANY($1::uuid[])`,
-        [claimIds]
-      )) as Array<{
-        id: string;
-        from_claim_id: string;
-        to_claim_id: string;
-        relation_type: string;
-      }>;
+      try {
+        const relationships = (await sql(
+          `SELECT id, from_claim_id, to_claim_id, relation_type
+           FROM relationships
+           WHERE from_claim_id = ANY($1::uuid[]) AND to_claim_id = ANY($1::uuid[])`,
+          [claimIds]
+        )) as Array<{
+          id: string;
+          from_claim_id: string;
+          to_claim_id: string;
+          relation_type: string;
+        }>;
 
-      for (const rel of relationships) {
-        edges.push({
-          id: String(rel.id),
-          from: `claim_${rel.from_claim_id}`,
-          to: `claim_${rel.to_claim_id}`,
-          label: rel.relation_type,
-        });
+        for (const rel of relationships) {
+          edges.push({
+            id: String(rel.id),
+            from: `claim_${rel.from_claim_id}`,
+            to: `claim_${rel.to_claim_id}`,
+            label: rel.relation_type,
+          });
+        }
+      } catch (e) {
+        console.warn("[ContextEngine] Relationship edge query warning:", e);
       }
 
       for (const c of claims) {
-        for (const ent of c.entities || []) {
+        const ents = parseEntities(c.entities);
+        for (const ent of ents) {
           edges.push({
             id: `link_${c.id}_${ent.id}`,
             from: `claim_${c.id}`,

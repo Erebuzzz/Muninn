@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { RavenLogo } from "@/components/brand/RavenLogo";
 import { elasticRecoil, initGalaxyCanvas } from "@/lib/animations";
 import { MythicIcon } from "@/components/common/MythicIcons";
+import { useAuth } from "@/lib/authContext";
 
 interface MemoryGraphViewProps {
   onSelectClaim?: (claimId: string) => void;
@@ -24,6 +25,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
   onSelectClaim,
   refreshTrigger,
 }) => {
+  const { user } = useAuth();
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] });
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
@@ -51,14 +53,16 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
       setGraphData(data);
     } catch (e) {
       console.error("Failed to fetch graph:", e);
+      setGraphData({ nodes: [], edges: [] });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setGraphData({ nodes: [], edges: [] });
     fetchGraph();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, user?.id]);
 
   const claimNodes = graphData.nodes.filter((n) => n.type === "claim");
   const entityNodes = graphData.nodes.filter((n) => n.type === "entity");
@@ -420,6 +424,19 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
                 MUNINN CORE
               </span>
             </div>
+
+            {spatialNodes.length === 0 && !loading && (
+              <div className="absolute left-[400px] top-[340px] -translate-x-1/2 z-10 flex flex-col items-center justify-center text-center px-4 w-[420px] pointer-events-none">
+                <span className="text-xs font-semibold text-slate-200">
+                  {user ? "Your Sovereign Vault is Ready" : "No Structured Claims Yet"}
+                </span>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  {user
+                    ? "Capture a conversation or record a voice note to crystallize claims, decisions, and tasks into this constellation."
+                    : "Capture speech or import a transcript to build the living memory graph."}
+                </p>
+              </div>
+            )}
 
             {/* Render Nodes as Tactical Shards */}
             {spatialNodes.map((node) => {

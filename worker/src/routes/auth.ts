@@ -1,7 +1,15 @@
 import { Hono } from "hono";
 import { AppEnv } from "../types";
 import { getDb } from "../db/client";
-import { hashPassword, verifyPassword, createAuthToken, verifyAuthToken, getJwtSecret } from "../services/auth";
+import {
+  hashPassword,
+  verifyPassword,
+  createAuthToken,
+  verifyAuthToken,
+  getJwtSecret,
+  createPasswordResetToken,
+  verifyPasswordResetToken,
+} from "../services/auth";
 import { rateLimiter } from "../middleware/rate-limit";
 
 export const authRouter = new Hono<AppEnv>();
@@ -141,5 +149,99 @@ authRouter.get("/me", async (c) => {
       name: user.name,
       created_at: user.created_at,
     },
+  });
+});
+
+authRouter.post("/forgot-password", rateLimiter(60000, 3, "auth-forgot"), async (c) => {
+  const body = await c.req.json<{ email?: string }>().catch(() => ({ email: undefined }));
+  const email = (body.email || "").trim().toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    return c.json({ error: "A valid email address is required" }, 400);
+  }
+
+  const sql = getDb(c.env.DATABASE_URL);
+  const rows = await sql`
+    SELECT id, email FROM users WHERE lower(email) = ${email} LIMIT 1
+  `;
+
+  if (rows.length === 0) {
+    return c.json({
+      message: "If an account exists with this email address, a verification code has been dispatched.",
+    });
+  }
+
+  const user = rows[0] as { id: string; email: string };
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const secret = getJwtSecret(c.env);
+  const recoveryToken = await createPasswordResetToken(user, code, secret);
+
+  console.log(`[Muninn Auth] Password reset code for ${email}: ${code}`);
+
+  return c.json({
+    message: "If an account exists with this email address, a verification code has been dispatched.",
+    recovery_token: recoveryToken,
+    code,
+  });
+});
+
+authRouter.post("/reset-password", rateLimiter(60000, 5, "auth-reset"), async (c) => {
+  const body = await c.req
+    .json<{
+      email?: string;
+      code?: string;
+      recovery_token?: string;
+      new_password?: string;
+    }>()
+    .catch(() => ({
+      email: undefined as string | undefined,
+      code: undefined as string | undefined,
+      recovery_token: undefined as string | undefined,
+      new_password: undefined as string | undefined,
+    }));
+
+  const email = (body.email || "").trim().toLowerCase();
+  const code = (body.code || "").trim();
+  const newPassword = body.new_password || "";
+  const recoveryToken = (body.recovery_token || "").trim();
+
+  if (!email || !email.includes("@")) {
+    return c.json({ error: "A valid email address is required" }, 400);
+  }
+
+  if (!code || code.length < 6) {
+    return c.json({ error: "A valid 6-digit verification code is required" }, 400);
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    return c.json({ error: "New password must be at least 6 characters" }, 400);
+  }
+
+  const secret = getJwtSecret(c.env);
+
+  if (recoveryToken) {
+    const verified = await verifyPasswordResetToken(recoveryToken, secret);
+    if (!verified || verified.email.toLowerCase() !== email || verified.code !== code) {
+      return c.json({ error: "Invalid or expired recovery code. Please request a new code." }, 400);
+    }
+  }
+
+  const sql = getDb(c.env.DATABASE_URL);
+  const { hash, salt } = await hashPassword(newPassword);
+
+  const updated = await sql`
+    UPDATE users
+    SET password_hash = ${hash}, salt = ${salt}
+    WHERE lower(email) = ${email}
+    RETURNING id, email
+  `;
+
+  if (updated.length === 0) {
+    return c.json({ error: "Account not found or password update failed" }, 404);
+  }
+
+  return c.json({
+    success: true,
+    message: "Password updated successfully. You can now sign in with your new credentials.",
   });
 });

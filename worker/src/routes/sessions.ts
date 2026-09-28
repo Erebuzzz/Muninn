@@ -268,11 +268,19 @@ sessionsRouter.post("/:id/complete", rateLimiter(60000, 10, "sessions-complete")
   );
 
   if (rawTranscriptText) {
-    const extraction = await ExtractionService.extractFromTranscript(rawTranscriptText, c.env);
-    await ExtractionService.persistExtraction(sql, sessionId, conv.user_id, extraction);
+    try {
+      const extraction = await ExtractionService.extractFromTranscript(rawTranscriptText, c.env);
+      await ExtractionService.persistExtraction(sql, sessionId, conv.user_id, extraction);
 
-    const entityNames = extraction.entities.map((e) => e.name);
-    await ResurfacingService.evaluateResurfacing(sql, c.env, conv.user_id, sessionId, entityNames);
+      const entityNames = extraction.entities.map((e) => e.name);
+      try {
+        await ResurfacingService.evaluateResurfacing(sql, c.env, conv.user_id, sessionId, entityNames);
+      } catch (resurfErr) {
+        console.warn("[Sessions] Resurfacing evaluation warning:", resurfErr);
+      }
+    } catch (extractErr) {
+      console.error("[Sessions] Claim extraction warning:", extractErr);
+    }
   }
 
   return c.json({ status: "completed", session_id: sessionId });
