@@ -104,6 +104,7 @@ export const api = {
     agent_id?: string;
     expires_in_seconds: number;
     max_session_duration_seconds: number;
+    mode?: "live" | "simulation";
   }> {
     try {
       return await request("/sessions/token");
@@ -112,6 +113,7 @@ export const api = {
         token: "demo-simulation-token",
         expires_in_seconds: 3600,
         max_session_duration_seconds: 600,
+        mode: "simulation",
       };
     }
   },

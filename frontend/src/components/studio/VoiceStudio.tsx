@@ -29,6 +29,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [status, setStatus] = useState<"idle" | "connecting" | "listening" | "processing">("idle");
+  const [isSimulation, setIsSimulation] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [turns, setTurns] = useState<TranscriptTurn[]>([]);
   const [manualInputOpen, setManualInputOpen] = useState(false);
@@ -80,12 +81,15 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
 
       const tokenData = await api.getVoiceToken();
 
-      if (tokenData.token === "demo-simulation-token") {
+      if (tokenData.token === "demo-simulation-token" || tokenData.mode === "simulation") {
+        setIsSimulation(true);
         setStatus("listening");
         setIsRecording(true);
         simulateTurn("Speaker A", "Starting capture session. Discussing the battery management module.");
         return;
       }
+
+      setIsSimulation(false);
 
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioCtx({ sampleRate: 24000 });
@@ -231,6 +235,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
 
     await stopForegroundRecording();
     setIsRecording(false);
+    setIsSimulation(false);
 
     if (currentSessionId) {
       const fullTranscript = turns.map((t) => `${t.speaker}: ${t.text}`).join("\n");
@@ -357,7 +362,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               {status === "listening"
-                ? "Muninn is actively transcribing. Ground-truth claims crystallize automatically."
+                ? isSimulation
+                  ? "Running sandbox demonstration. Physical microphone is idle."
+                  : "Muninn is actively transcribing live audio. Ground-truth claims crystallize automatically."
                 : status === "processing"
                 ? "Dissecting semantic claims, entities, and surfacing vectors..."
                 : "Opt-in recording. Zero retention until you decide."}
@@ -450,14 +457,21 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-200/80 dark:border-slate-800/40">
         <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-2">
           {isRecording ? (
-            <span className="text-orange-600 dark:text-orange-400 flex items-center gap-1.5 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
-              Live Stream Active (PCM 24kHz)
-            </span>
+            isSimulation ? (
+              <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                Sandbox Simulation (Mic Idle)
+              </span>
+            ) : (
+              <span className="text-orange-600 dark:text-orange-400 flex items-center gap-1.5 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
+                Hardware Microphone Active (PCM 24kHz)
+              </span>
+            )
           ) : isRecordingMemo ? (
             <span className="text-sky-600 dark:text-sky-400 flex items-center gap-1.5 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-              Voice Memo Recording (Sync STT)
+              Hardware Mic Capturing (Quick Memo)
             </span>
           ) : (
             <span className="text-slate-500 dark:text-slate-400">Capture Idle. Ready for stream or memo.</span>
