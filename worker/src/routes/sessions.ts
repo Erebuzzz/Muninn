@@ -19,6 +19,7 @@ sessionsRouter.get("/token", rateLimiter(60000, 15, "sessions-token"), async (c)
   const sql = getDb(c.env.DATABASE_URL);
   const userId = await getOptionalAuthUserId(c);
   const defaultUserId = c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+  const mode = (c.req.query("mode") === "scribe" ? "scribe" : "copilot") as "copilot" | "scribe";
 
   const expiresIn = Math.min(Math.max(parseInt(c.req.query("expires_in") || "300", 10), 60), 600);
   const maxDuration = Math.min(Math.max(parseInt(c.req.query("max_duration") || "8640", 10), 60), 10800);
@@ -28,13 +29,14 @@ sessionsRouter.get("/token", rateLimiter(60000, 15, "sessions-token"), async (c)
     return c.json({
       token: "demo-simulation-token",
       agent_id: "demo-agent-id",
+      agent_mode: mode,
       expires_in_seconds: expiresIn,
       max_session_duration_seconds: maxDuration,
       mode: "simulation",
     });
   }
 
-  const tokenInfo = await VoiceAgentService.generateToken(sql, c.env, userId, expiresIn, maxDuration);
+  const tokenInfo = await VoiceAgentService.generateToken(sql, c.env, userId, mode, expiresIn, maxDuration);
   return c.json(tokenInfo);
 });
 
@@ -396,3 +398,84 @@ sessionsRouter.post("/quick-note", rateLimiter(60000, 6, "sessions-quicknote"), 
     return c.json({ detail: "Quick note processing failed", error: err.message }, 500);
   }
 });
+
+/**
+ * Permanently deletes a session and its associated claims, relationships, task states, and events.
+ */
+sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (c) => {
+  const sessionId = c.req.param("id");
+  const sql = getDb(c.env.DATABASE_URL);
+  const userId = (await getOptionalAuthUserId(c)) || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
+
+  // Check if session exists and belongs to the user (or default user)
+  const existing = (await sql(
+    `SELECT id, user_id FROM conversations WHERE id = $1 AND (user_id = $2 OR user_id = '00000000-0000-0000-0000-000000000001') LIMIT 1`,
+    [sessionId, userId]
+  )) as Array<{ id: string; user_id: string }>;
+
+  if (existing.length === 0) {
+    return c.json({ error: "Session not found or access denied" }, 404);
+  }
+
+  try {
+    // 1. Delete resurfacing events
+    await sql(
+      `DELETE FROM resurfacing_events 
+       WHERE conversation_id = $1 
+          OR subject_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+      [sessionId]
+    );
+
+    // 2. Delete relationships involving claims from this conversation
+    await sql(
+      `DELETE FROM relationships 
+       WHERE source_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)
+          OR target_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+      [sessionId]
+    );
+
+    // 3. Delete claim_entities
+    await sql(
+      `DELETE FROM claim_entities 
+       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+      [sessionId]
+    );
+
+    // 4. Delete task states
+    await sql(
+      `DELETE FROM task_state 
+       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+      [sessionId]
+    );
+
+    // 5. Delete claims
+    await sql(`DELETE FROM claims WHERE conversation_id = $1`, [sessionId]);
+
+    // 6. Delete speakers
+    await sql(`DELETE FROM speakers WHERE conversation_id = $1`, [sessionId]);
+
+    // 7. Delete conversation record
+    await sql(`DELETE FROM conversations WHERE id = $1`, [sessionId]);
+
+    // 8. Clean up orphan entities no longer referenced by any remaining claims for this user
+    try {
+      await sql(
+        `DELETE FROM entities 
+         WHERE user_id = $1 
+           AND id NOT IN (SELECT DISTINCT entity_id FROM claim_entities)`,
+        [userId]
+      );
+    } catch {
+      // Ignore if constraint error
+    }
+
+    return c.json({
+      success: true,
+      message: "Session and associated memory claims deleted successfully",
+      deleted_id: sessionId,
+    });
+  } catch (err: any) {
+    return c.json({ error: "Failed to delete session", details: err?.message }, 500);
+  }
+});
+

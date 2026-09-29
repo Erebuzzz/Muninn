@@ -30,6 +30,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [status, setStatus] = useState<"idle" | "connecting" | "listening" | "processing">("idle");
   const [isSimulation, setIsSimulation] = useState(false);
+  const [captureMode, setCaptureMode] = useState<"copilot" | "scribe">("copilot");
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [turns, setTurns] = useState<TranscriptTurn[]>([]);
   const [manualInputOpen, setManualInputOpen] = useState(false);
@@ -50,6 +51,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const turnsEndRef = useRef<HTMLDivElement | null>(null);
+  const nextAudioPlaybackTimeRef = useRef<number>(0);
 
   // Live timer for capture duration
   useEffect(() => {
@@ -74,18 +76,26 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     try {
       setStatus("connecting");
       soundFX.playSessionStart();
+      nextAudioPlaybackTimeRef.current = 0;
       await startForegroundRecording();
 
       const conv = await api.createSession("Live Capture Session");
       setCurrentSessionId(conv.id);
 
-      const tokenData = await api.getVoiceToken();
+      const tokenData = await api.getVoiceToken(captureMode);
 
       if (tokenData.token === "demo-simulation-token" || tokenData.mode === "simulation") {
         setIsSimulation(true);
         setStatus("listening");
         setIsRecording(true);
-        simulateTurn("Speaker A", "Starting capture session. Discussing the battery management module.");
+        if (captureMode === "copilot") {
+          simulateTurn("Speaker A", "Starting capture session. We are discussing the battery management thermal curves.");
+          setTimeout(() => {
+            simulateTurn("Muninn (Co-Pilot)", "Understood. Are we aiming to cap peak pack temperature below 45°C or modify the cell discharge throttling?");
+          }, 1500);
+        } else {
+          simulateTurn("Speaker A", "Starting capture session. Discussing the battery management module.");
+        }
         return;
       }
 
@@ -110,7 +120,6 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       wsRef.current = ws;
 
       let ready = false;
-      let playbackTime = audioCtx.currentTime;
 
       workletNode.port.onmessage = (e) => {
         if (ready && ws.readyState === WebSocket.OPEN) {
@@ -143,7 +152,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
           } else if (msg.type === "transcript.agent" && msg.text) {
             addTurn("Muninn", msg.text);
           } else if (msg.type === "reply.audio" && msg.data) {
-            playAgentAudio(msg.data, audioCtx, playbackTime);
+            playAgentAudio(msg.data, audioCtx);
           }
         } catch (err) {
           console.error("WebSocket message parse error", err);
@@ -169,7 +178,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     }
   };
 
-  const playAgentAudio = (base64Audio: string, audioCtx: AudioContext, playbackTime: number) => {
+  const playAgentAudio = (base64Audio: string, audioCtx: AudioContext) => {
     try {
       const raw = atob(base64Audio);
       const pcm16 = new Int16Array(raw.length / 2);
@@ -186,8 +195,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       src.buffer = buffer;
       src.connect(audioCtx.destination);
       const now = audioCtx.currentTime;
-      const scheduledTime = Math.max(playbackTime, now);
+      const scheduledTime = Math.max(nextAudioPlaybackTimeRef.current, now);
       src.start(scheduledTime);
+      nextAudioPlaybackTimeRef.current = scheduledTime + buffer.duration;
     } catch (e) {
       console.error("Audio playback error", e);
     }
@@ -234,6 +244,7 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
     }
 
     await stopForegroundRecording();
+    nextAudioPlaybackTimeRef.current = 0;
     setIsRecording(false);
     setIsSimulation(false);
 
@@ -426,6 +437,44 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
 
       {/* Central Mythic Raven Mic & Waveform Display */}
       <div className="my-6 flex flex-col items-center justify-center">
+        {/* Dual Mode Switcher */}
+        <div className="mb-4 flex items-center bg-slate-200/80 dark:bg-slate-900/90 p-1 rounded-xl border border-slate-300 dark:border-slate-800 shadow-inner">
+          <button
+            type="button"
+            disabled={isRecording || isRecordingMemo || status === "connecting" || status === "processing"}
+            onClick={() => setCaptureMode("copilot")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition ${
+              captureMode === "copilot"
+                ? "bg-orange-500 text-slate-950 font-semibold shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+            } ${isRecording || isRecordingMemo ? "opacity-60 cursor-not-allowed" : ""}`}
+            title="Interactive Co-Pilot: Muninn actively answers questions, suggests engineering solutions, and participates in multi-turn conversation."
+          >
+            <span className="text-[13px]">ᚦ</span>
+            <span>Interactive Co-Pilot</span>
+          </button>
+          <button
+            type="button"
+            disabled={isRecording || isRecordingMemo || status === "connecting" || status === "processing"}
+            onClick={() => setCaptureMode("scribe")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition ${
+              captureMode === "scribe"
+                ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-slate-100 font-semibold shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+            } ${isRecording || isRecordingMemo ? "opacity-60 cursor-not-allowed" : ""}`}
+            title="Quiet Scribe: Silent background recording. Muninn transcribes speech and crystallizes claims without speaking back."
+          >
+            <span className="text-[13px]">ᛗ</span>
+            <span>Quiet Scribe</span>
+          </button>
+        </div>
+
+        <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-4 text-center max-w-xs">
+          {captureMode === "copilot"
+            ? "Live vocal co-pilot: offers feedback, answers questions, and crystallizes memory."
+            : "Passive recording: transcribes speech and crystallizes claims silently."}
+        </p>
+
         <MythicMicButton
           isRecording={isRecording}
           onToggle={handleMicToggle}

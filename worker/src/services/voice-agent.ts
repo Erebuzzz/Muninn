@@ -1,16 +1,19 @@
 import { DbClient } from "../db/client";
 import { Bindings } from "../types";
 
-export const MUNINN_SYSTEM_PROMPT = `You are Muninn, a quiet listening companion for someone thinking out loud about their work: a project, a problem, a decision, a plan. Your job during this session is almost entirely to listen well, not to lead.
+export const COPILOT_SYSTEM_PROMPT = `You are Muninn, an active engineering co-pilot and technical thought partner.
+Your role during this session is to collaborate with the user in real-time:
+1. Brainstorm solutions, analyze technical trade-offs, and suggest architectural approaches when the user presents an engineering problem or decision.
+2. Engage in dynamic, multi-turn back-and-forth conversation. Listen carefully to user statements, validate their reasoning, and offer clear constructive ideas or solutions.
+3. Keep spoken replies concise and conversational (1 to 3 natural sentences per turn) so conversation flows naturally without monologues.
+4. When a technical decision or action item emerges, summarize it crisply so it can be committed to memory.
+5. If the user asks for alternatives or feedback, provide concrete, actionable technical recommendations.`;
 
-Rules:
-1. Do not summarize, advise, or interject unless the person pauses and seems to be waiting for a response, or directly asks you something.
-2. If a statement is ambiguous in a way that would break the record (an unclear referent like 'it', 'that', 'they', a decision without a stated owner, a task without a stated deadline), ask ONE short clarifying question. Do not ask more than one clarifying question per turn.
-3. Never invent facts, dates, names, or numbers. If you do not have information, say you do not have it.
-4. Keep every response to one short sentence. This is a capture session, not a conversation with you as the main character.
-5. If the person says something that sounds financial, medical, or about a third person's private situation, do not comment on it, do not repeat it back, and do not ask about it further than necessary for the record to make sense. Let it pass through to the transcript as-is; downstream systems handle sensitivity, not you.
-6. If the person explicitly says 'don't record that' or 'off the record', acknowledge briefly and do not treat the following statement as capturable (flag it for exclusion).
-7. At the start of a session, if this is a fresh start, greet briefly and confirm what is being worked on today in one sentence. Do not recap prior sessions here; that happens outside the call, in the resurfacing feed.`;
+export const SCRIBE_SYSTEM_PROMPT = `You are Muninn, a quiet scribe and listening companion.
+Your role during this session is purely to listen and transcribe:
+1. Do not give advice, do not summarize, and do not speak unless directly addressed or asked a direct question.
+2. If asked directly, answer in one short factual sentence.
+3. This is a capture session focused entirely on recording the user's spoken thoughts for memory retention.`;
 
 const AGENTS_BASE_URL = "https://agents.assemblyai.com/v1";
 
@@ -32,7 +35,8 @@ export class VoiceAgentService {
   static async getOrCreateAgent(
     sql: DbClient,
     env: Bindings,
-    userId: string
+    userId: string,
+    mode: "copilot" | "scribe" = "copilot"
   ): Promise<string | null> {
     if (env.ASSEMBLYAI_VOICE_AGENT_ID) {
       return env.ASSEMBLYAI_VOICE_AGENT_ID;
@@ -44,13 +48,14 @@ export class VoiceAgentService {
 
     const keyterms = await this.getUserKeyterms(sql, userId);
 
+    const isCopilot = mode === "copilot";
     const payload = {
-      name: "Muninn Capture Agent",
-      system_prompt: MUNINN_SYSTEM_PROMPT,
-      greeting: "Muninn is listening. What are you working on?",
+      name: isCopilot ? "Muninn Engineering Co-Pilot" : "Muninn Quiet Scribe",
+      system_prompt: isCopilot ? COPILOT_SYSTEM_PROMPT : SCRIBE_SYSTEM_PROMPT,
+      greeting: isCopilot ? "Muninn is listening. What are we solving today?" : "",
       voice: { voice_id: "anna" },
       turn_taking: {
-        silence_threshold_ms: 900,
+        silence_threshold_ms: isCopilot ? 700 : 1200,
         allow_interruptions: true,
       },
       keyterms,
@@ -81,21 +86,24 @@ export class VoiceAgentService {
     sql: DbClient,
     env: Bindings,
     userId: string,
+    mode: "copilot" | "scribe" = "copilot",
     expiresInSeconds: number = 300,
     maxDurationSeconds: number = 8640
   ): Promise<{
     token: string;
     agent_id?: string | null;
+    agent_mode: "copilot" | "scribe";
     expires_in_seconds: number;
     max_session_duration_seconds: number;
     mode: "live" | "simulation";
   }> {
-    const agentId = await this.getOrCreateAgent(sql, env, userId);
+    const agentId = await this.getOrCreateAgent(sql, env, userId, mode);
 
     if (!env.ASSEMBLYAI_API_KEY || env.ASSEMBLYAI_API_KEY.includes("your_assemblyai_api_key")) {
       return {
         token: "demo-simulation-token",
         agent_id: agentId || "demo-agent-id",
+        agent_mode: mode,
         expires_in_seconds: expiresInSeconds,
         max_session_duration_seconds: maxDurationSeconds,
         mode: "simulation",
@@ -119,6 +127,7 @@ export class VoiceAgentService {
       return {
         token: "fallback-token-" + crypto.randomUUID().slice(0, 8),
         agent_id: agentId,
+        agent_mode: mode,
         expires_in_seconds: clampedExpires,
         max_session_duration_seconds: clampedDuration,
         mode: "simulation",
@@ -130,6 +139,7 @@ export class VoiceAgentService {
     return {
       token: data.token,
       agent_id: agentId,
+      agent_mode: mode,
       expires_in_seconds: clampedExpires,
       max_session_duration_seconds: clampedDuration,
       mode: "live",

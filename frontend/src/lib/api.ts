@@ -92,21 +92,42 @@ export const api = {
     }
   },
 
-  async getVoiceToken(): Promise<{
+  async getVoiceToken(mode: "copilot" | "scribe" = "copilot"): Promise<{
     token: string;
     agent_id?: string;
+    agent_mode?: "copilot" | "scribe";
     expires_in_seconds: number;
     max_session_duration_seconds: number;
     mode?: "live" | "simulation";
   }> {
     try {
-      return await request("/sessions/token");
+      return await request(`/sessions/token?mode=${mode}`);
     } catch {
       return {
         token: "demo-simulation-token",
+        agent_mode: mode,
         expires_in_seconds: 3600,
         max_session_duration_seconds: 600,
         mode: "simulation",
+      };
+    }
+  },
+
+  async deleteSession(id: string): Promise<{ success: boolean; message: string; deleted_id: string }> {
+    try {
+      return await request(`/sessions/${id}`, {
+        method: "DELETE",
+      });
+    } catch {
+      const queue = localStore.getOfflineQueue();
+      const updated = queue.filter((q) => q.id !== id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("muninn_offline_queue", JSON.stringify(updated));
+      }
+      return {
+        success: true,
+        message: "Session removed locally",
+        deleted_id: id,
       };
     }
   },

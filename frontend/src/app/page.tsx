@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
   const [sessionDetails, setSessionDetails] = useState<Record<string, { claims: Claim[]; raw_transcript: any }>>({});
   const [loadingSession, setLoadingSession] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isNative = typeof window !== "undefined" && localStore.isNative();
@@ -99,6 +101,32 @@ export default function DashboardPage() {
       } finally {
         setLoadingSession(null);
       }
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      setDeletingSessionId(sessionId);
+      await api.deleteSession(sessionId);
+
+      // Optimistically remove from state
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      setSessionDetails((prev) => {
+        const next = { ...prev };
+        delete next[sessionId];
+        return next;
+      });
+      if (expandedSessionId === sessionId) {
+        setExpandedSessionId(null);
+      }
+      setConfirmDeleteId(null);
+      // Trigger cascade refresh for graph & claim tallies
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      console.error("Failed to delete session:", err);
+      alert("Failed to delete session. Please try again.");
+    } finally {
+      setDeletingSessionId(null);
     }
   };
 
@@ -290,6 +318,59 @@ export default function DashboardPage() {
                             ) : (
                               <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/60 text-[11px] font-mono text-slate-400 italic">
                                 Dialogue captured. No crystallized decisions or tasks identified in this recording.
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Delete Session Action & Inline Confirmation */}
+                          <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                            {confirmDeleteId === sess.id ? (
+                              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+                                <div className="space-y-0.5">
+                                  <div className="text-[11px] font-mono text-red-500 dark:text-red-400 font-semibold">
+                                    Permanently delete this session?
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                    All associated memory claims and graph nodes will be removed.
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 self-end sm:self-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    className="px-2.5 py-1 rounded-lg text-[10px] font-mono text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={deletingSessionId === sess.id}
+                                    onClick={() => handleDeleteSession(sess.id)}
+                                    className="px-3 py-1 rounded-lg text-[10px] font-mono font-semibold text-white bg-red-600 hover:bg-red-500 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                                  >
+                                    {deletingSessionId === sess.id ? (
+                                      <>
+                                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <span>Deleting...</span>
+                                      </>
+                                    ) : (
+                                      <span>Confirm Delete</span>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteId(sess.id)}
+                                  className="px-2.5 py-1 rounded-lg text-[10px] font-mono text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-500/10 border border-red-500/30 transition flex items-center gap-1.5"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                                  </svg>
+                                  <span>Delete Session</span>
+                                </button>
                               </div>
                             )}
                           </div>
