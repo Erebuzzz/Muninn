@@ -715,6 +715,11 @@ export default function DashboardPage() {
         onReviewed={() => setRefreshTrigger((prev) => prev + 1)}
       />
 
+      <PrivacyPolicyModal
+        isOpen={privacyModalOpen}
+        onClose={() => setPrivacyModalOpen(false)}
+      />
+
       <ClaimInspector
         claimId={inspectedClaimId}
         onClose={() => setInspectedClaimId(null)}
@@ -754,13 +759,27 @@ export default function DashboardPage() {
           <span className="text-slate-400 dark:text-slate-700">•</span>
 
           <button
+            type="button"
+            onClick={() => setPrivacyModalOpen(true)}
+            className="text-xs font-mono text-slate-800 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1.5"
+          >
+            <MythicIcon.Shield size={13} className="text-emerald-500" />
+            <span>Privacy Policy</span>
+          </button>
+
+          <span className="text-slate-400 dark:text-slate-700">•</span>
+
+          <button
+            type="button"
             onClick={() => setReviewModalOpen(true)}
             className="text-xs font-mono text-slate-800 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-300 transition flex items-center gap-1.5"
           >
-            <MythicIcon.Shield size={13} className="text-rose-500" />
-            <span>Privacy Review</span>
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span>Review Gate</span>
             {pendingCount > 0 && (
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-mono font-bold animate-pulse">
+                {pendingCount}
+              </span>
             )}
           </button>
         </div>
