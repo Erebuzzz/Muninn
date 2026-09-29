@@ -8,12 +8,14 @@ interface ClaimInspectorProps {
   claimId: string | null;
   onClose: () => void;
   onSelectRelatedClaim?: (id: string) => void;
+  onClaimDeleted?: (id: string) => void;
 }
 
 export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
   claimId,
   onClose,
   onSelectRelatedClaim,
+  onClaimDeleted,
 }) => {
   const [data, setData] = useState<{
     claim: Claim;
@@ -159,7 +161,27 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-slate-800/60 flex justify-end">
+        <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={async () => {
+              if (confirm("Delete this claim and remove its node from the memory constellation?")) {
+                try {
+                  await api.deleteClaim(claimId);
+                  if (onClaimDeleted) onClaimDeleted(claimId);
+                  onClose();
+                } catch {
+                  alert("Failed to delete claim.");
+                }
+              }
+            }}
+            className="px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 text-xs font-mono transition flex items-center gap-1.5"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+            </svg>
+            <span>Delete Node</span>
+          </button>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs transition border border-slate-800 font-mono"

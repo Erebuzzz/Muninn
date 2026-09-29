@@ -200,3 +200,55 @@ claimsRouter.get("/:id", async (c) => {
     outgoing_relationships: outgoingRows,
   });
 });
+
+/**
+ * Deletes an individual claim and its associated relationships, task state, and orphan entities.
+ */
+claimsRouter.delete("/:id", async (c) => {
+  const sql = getDb(c.env.DATABASE_URL);
+  const userId = await getOptionalAuthUserId(c);
+  const claimId = c.req.param("id");
+
+  if (!UUID_REGEX.test(claimId)) {
+    return c.json({ detail: "Invalid claim ID format" }, 400);
+  }
+
+  const existing = (await sql(
+    `SELECT c.id, c.conversation_id, cv.user_id 
+     FROM claims c 
+     JOIN conversations cv ON cv.id = c.conversation_id 
+     WHERE c.id = $1::uuid AND cv.user_id = $2 LIMIT 1`,
+    [claimId, userId]
+  )) as any[];
+
+  if (existing.length === 0) {
+    return c.json({ detail: "Claim not found or access denied" }, 404);
+  }
+
+  try {
+    await sql(`DELETE FROM resurfacing_events WHERE subject_claim_id = $1::uuid`, [claimId]);
+    await sql(`DELETE FROM relationships WHERE from_claim_id = $1::uuid OR to_claim_id = $1::uuid`, [claimId]);
+    await sql(`DELETE FROM claim_entities WHERE claim_id = $1::uuid`, [claimId]);
+    await sql(`DELETE FROM task_state WHERE claim_id = $1::uuid`, [claimId]);
+    await sql(`DELETE FROM claims WHERE id = $1::uuid`, [claimId]);
+
+    try {
+      await sql(
+        `DELETE FROM entities 
+         WHERE user_id = $1 
+           AND id NOT IN (SELECT DISTINCT entity_id FROM claim_entities)`,
+        [userId]
+      );
+    } catch {
+      // Ignore if foreign key constraint
+    }
+
+    return c.json({
+      success: true,
+      message: "Claim and associated graph node deleted successfully",
+      deleted_id: claimId,
+    });
+  } catch (err: any) {
+    return c.json({ detail: "Failed to delete claim", error: err?.message }, 500);
+  }
+});

@@ -130,6 +130,33 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteClaim = async (claimId: string, sessionId: string) => {
+    try {
+      await api.deleteClaim(claimId);
+
+      setSessionDetails((prev) => {
+        const sess = prev[sessionId];
+        if (!sess) return prev;
+        return {
+          ...prev,
+          [sessionId]: {
+            ...sess,
+            claims: sess.claims.filter((c) => c.id !== claimId),
+          },
+        };
+      });
+
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, claim_count: Math.max(0, (s.claim_count || 1) - 1) } : s))
+      );
+
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      console.error("Failed to delete claim:", err);
+      alert("Failed to delete claim node.");
+    }
+  };
+
   const formatDate = (isoString: string) => {
     if (!mounted) return "";
     try {
@@ -222,10 +249,23 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
                         {sess.claim_count || 0} claims
                       </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteId(confirmDeleteId === sess.id ? null : sess.id);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition"
+                        title="Delete Session"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
                       <svg
                         width="14"
                         height="14"
@@ -241,6 +281,37 @@ export default function DashboardPage() {
                       </svg>
                     </div>
                   </button>
+
+                  {/* Top-Level Session Deletion Confirmation Bar */}
+                  {confirmDeleteId === sess.id && (
+                    <div className="p-3 bg-red-500/10 border-t border-b border-red-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs animate-fade-in">
+                      <div className="space-y-0.5">
+                        <div className="text-[11px] font-mono text-red-500 dark:text-red-400 font-semibold">
+                          Permanently delete this session?
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                          All associated claims and constellation nodes will be removed.
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-mono text-slate-400 hover:text-slate-200 border border-slate-700 hover:bg-slate-800 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={deletingSessionId === sess.id}
+                          onClick={() => handleDeleteSession(sess.id)}
+                          className="px-3 py-1 rounded-lg text-[10px] font-mono font-semibold text-white bg-red-600 hover:bg-red-500 transition disabled:opacity-50"
+                        >
+                          {deletingSessionId === sess.id ? "Deleting..." : "Confirm Delete"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Expanded Accordion: Full Dialogue & Extracted Claims */}
                   {isExpanded && (
@@ -309,9 +380,24 @@ export default function DashboardPage() {
                                         {claim.text}
                                       </p>
                                     </div>
-                                    <span className="text-[10px] font-mono text-orange-400 hover:text-orange-300 shrink-0">
-                                      Inspect →
-                                    </span>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <span className="text-[10px] font-mono text-orange-400 hover:text-orange-300">
+                                        Inspect →
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteClaim(claim.id, sess.id);
+                                        }}
+                                        className="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition"
+                                        title="Delete Node from Graph"
+                                      >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                                        </svg>
+                                      </button>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -632,6 +718,7 @@ export default function DashboardPage() {
       <ClaimInspector
         claimId={inspectedClaimId}
         onClose={() => setInspectedClaimId(null)}
+        onClaimDeleted={() => setRefreshTrigger((prev) => prev + 1)}
       />
 
       {/* Mobile Dynamic Bottom Navigation Bar (< 768px) */}

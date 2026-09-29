@@ -100,83 +100,133 @@ export class ExtractionService {
     transcriptText: string,
     env: Bindings
   ): Promise<ExtractionResult> {
-    if (!env.ASSEMBLYAI_API_KEY || env.ASSEMBLYAI_API_KEY.includes("your_assemblyai_api_key")) {
-      return this.fallbackExtract(transcriptText);
+    // 1. Try Cloudflare Workers AI natively (Llama 3.3 70B Instruct)
+    if (env.AI) {
+      try {
+        console.log("[Extraction] Calling Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct)...");
+        const aiResp: any = await env.AI.run("@cf/meta/llama-3.3-70b-instruct", {
+          messages: [
+            {
+              role: "system",
+              content: `${EXTRACTION_SYSTEM_PROMPT}
+
+CRITICAL RULES:
+1. Infer the substantive engineering activities, decisions, and tasks from the transcript.
+2. DO NOT extract casual greetings, small talk, pleasantries, filler phrases, testing remarks, or conversational artifacts (e.g. "thank god", "hello", "muninn is listening", "just testing this", "it's just a test run", "so", "we'll see what this is", "can you hear me").
+3. If the transcript is only casual banter, greetings, or a mic test with NO actual engineering decisions, tasks, or hypotheses, output strictly:
+{"entities": [], "claims": [], "relationships": []}
+4. For entities, extract real technical components, modules, systems, projects, or people. NEVER extract common words, verbs, or conversational words.`
+            },
+            {
+              role: "user",
+              content: `Transcript to extract:\n\n${transcriptText}`
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 2048,
+        });
+
+        let rawText = (aiResp?.response || "").trim();
+        if (rawText) {
+          if (rawText.startsWith("```")) {
+            rawText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+          }
+          const parsed = JSON.parse(rawText) as ExtractionResult;
+          if (parsed && Array.isArray(parsed.claims)) {
+            console.log(`[Extraction] Workers AI extracted ${parsed.claims.length} claims, ${parsed.entities?.length || 0} entities.`);
+            return {
+              entities: parsed.entities || [],
+              claims: parsed.claims || [],
+              relationships: parsed.relationships || [],
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("[Extraction] Workers AI failed or timed out, trying next provider:", err);
+      }
     }
 
-    const gatewayUrl = env.LLM_GATEWAY_URL || "https://llm-gateway.assemblyai.com/v1";
-    const model = env.LLM_GATEWAY_MODEL || "claude-3-5-sonnet";
+    // 2. Try Gemini API if key is available
+    if (env.GEMINI_API_KEY) {
+      try {
+        console.log("[Extraction] Calling Gemini 2.0 Flash API...");
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+        const gResp = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: `${EXTRACTION_SYSTEM_PROMPT}\n\nTranscript to extract:\n${transcriptText}` }]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.1
+            }
+          })
+        });
 
-    const payload = {
-      model,
-      messages: [
-        {
-          role: "system",
-          content: EXTRACTION_SYSTEM_PROMPT,
-          cache_control: { type: "ephemeral" },
-        },
-        { role: "user", content: `Transcript to extract:\n\n${transcriptText}` },
-      ],
-      temperature: 0.1,
-      max_tokens: 3000,
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "muninn_extraction",
-          schema: EXTRACTION_JSON_SCHEMA,
-          strict: true,
-        },
-      },
-      post_processing_steps: [{ type: "json-repair" }],
-      fallbacks: [
-        { model: "gemini-2.5-flash" },
-        { model: "claude-haiku-4-5-20251001" },
-      ],
-      fallback_config: { depth: 2, retry: true },
-    };
-
-    try {
-      const resp = await fetch(`${gatewayUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.ASSEMBLYAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!resp.ok) {
-        console.warn(`[LLM Gateway] HTTP ${resp.status} on extraction: ${await resp.text()}`);
-        return this.fallbackExtract(transcriptText);
+        if (gResp.ok) {
+          const gData: any = await gResp.json();
+          const gText = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (gText) {
+            const parsed = JSON.parse(gText);
+            return {
+              entities: parsed.entities || [],
+              claims: parsed.claims || [],
+              relationships: parsed.relationships || []
+            };
+          }
+        }
+      } catch (geminiErr) {
+        console.warn("[Extraction] Gemini API failed, trying gateway:", geminiErr);
       }
-
-      const data = (await resp.json()) as {
-        request_id?: string;
-        model?: string;
-        choices: Array<{ message: { content: string } }>;
-      };
-
-      console.log(
-        `[LLM Gateway] Extraction succeeded. request_id: ${data.request_id || "unknown"}, model: ${
-          data.model || model
-        }`
-      );
-
-      let content = data.choices[0]?.message?.content?.trim() || "";
-      if (content.startsWith("```")) {
-        content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-      }
-
-      const parsed = JSON.parse(content) as ExtractionResult;
-      return {
-        entities: parsed.entities || [],
-        claims: parsed.claims || [],
-        relationships: parsed.relationships || [],
-      };
-    } catch (err) {
-      console.error("[LLM Gateway] Extraction exception, falling back:", err);
-      return this.fallbackExtract(transcriptText);
     }
+
+    // 3. Fallback to external gateway if configured
+    if (env.LLM_GATEWAY_URL && !env.LLM_GATEWAY_URL.includes("assemblyai.com")) {
+      try {
+        const gatewayUrl = env.LLM_GATEWAY_URL;
+        const model = env.LLM_GATEWAY_MODEL || "claude-3-5-sonnet";
+        const resp = await fetch(`${gatewayUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.ASSEMBLYAI_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
+              { role: "user", content: `Transcript to extract:\n\n${transcriptText}` }
+            ],
+            temperature: 0.1,
+            max_tokens: 2048,
+          }),
+        });
+
+        if (resp.ok) {
+          const data: any = await resp.json();
+          let content = data.choices?.[0]?.message?.content?.trim() || "";
+          if (content.startsWith("```")) {
+            content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+          }
+          const parsed = JSON.parse(content);
+          return {
+            entities: parsed.entities || [],
+            claims: parsed.claims || [],
+            relationships: parsed.relationships || [],
+          };
+        }
+      } catch (gwErr) {
+        console.warn("[Extraction] External gateway failed:", gwErr);
+      }
+    }
+
+    // 4. Intelligent Heuristic Fallback (Never creates nonsense or filler nodes)
+    return this.fallbackExtract(transcriptText);
   }
 
   static fallbackExtract(transcriptText: string): ExtractionResult {
@@ -190,41 +240,75 @@ export class ExtractionService {
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
-    for (const line of lines) {
-      let speaker = "Speaker A";
-      let text = line;
+    // Common filler and small-talk patterns that must NEVER be extracted as claims or entities
+    const fillerPatterns = [
+      /^(hi|hello|hey|bye|goodbye)\b/i,
+      /^thank\s+god\b/i,
+      /^just\s+testing\b/i,
+      /^it('s|\s+is)\s+just\s+a\s+test\b/i,
+      /^(ok|okay|so|well|yeah|yes|no)\.?$/i,
+      /^we('ll|\s+will)\s+see\b/i,
+      /^muninn\s+is\s+listening/i,
+      /^what\s+are\s+we\s+solving/i,
+      /^can\s+you\s+hear\s+me/i,
+      /^testing\s+1\s*2\s*3/i,
+    ];
 
-      if (line.includes(":")) {
-        const parts = line.split(":");
+    const stopWords = new Set([
+      "speaker", "i", "we", "they", "then", "so", "however", "because", "muninn", "the",
+      "it", "just", "what", "god", "thank", "starting", "discussing", "module", "this",
+      "that", "there", "here", "with", "from", "into", "about", "your", "mine", "some"
+    ]);
+
+    for (const rawLine of lines) {
+      let speaker = "Speaker A";
+      let text = rawLine;
+
+      if (rawLine.includes(":")) {
+        const parts = rawLine.split(":");
         speaker = parts[0].trim();
         text = parts.slice(1).join(":").trim();
       }
 
-      if (!text) continue;
+      // Ignore speech turns from Muninn itself
+      if (speaker.toLowerCase().includes("muninn")) continue;
+      if (!text || text.length < 12) continue;
+
+      // Ignore greetings, small talk, and microphone checks
+      const isFiller = fillerPatterns.some((pattern) => pattern.test(text.toLowerCase()));
+      if (isFiller) continue;
+
       const lower = text.toLowerCase();
 
-      let claimType = "observation";
+      let claimType: "decision" | "task" | "question" | "hypothesis" | "observation" | null = null;
       if (
-        ["will do", "need to", "action item", "todo", "task", "ship", "implement", "fix", "buy"].some(
+        ["will do", "need to", "action item", "todo", "task", "ship", "implement", "redesign", "fix", "buy", "order"].some(
           (w) => lower.includes(w)
         )
       ) {
         claimType = "task";
       } else if (
-        ["decided", "decision", "we chose", "let's go with", "agreed"].some((w) =>
+        ["decided", "decision", "we chose", "let's go with", "agreed", "pause", "approved"].some((w) =>
           lower.includes(w)
         )
       ) {
         claimType = "decision";
-      } else if (["?", "why", "how", "what if", "whether"].some((w) => lower.includes(w))) {
+      } else if (["?", "should we", "how do we", "what if", "whether we"].some((w) => lower.includes(w))) {
         claimType = "question";
       } else if (
-        ["maybe", "might be", "hypothesis", "could be", "theory"].some((w) => lower.includes(w))
+        ["maybe", "might be", "hypothesis", "could be", "theory", "suspect"].some((w) => lower.includes(w))
       ) {
         claimType = "hypothesis";
+      } else if (
+        ["noticed", "measured", "overheating", "voltage", "revision", "pinout", "bracket", "firmware", "bug", "fails"].some((w) => lower.includes(w))
+      ) {
+        claimType = "observation";
       }
 
-      let sensitivity = "none";
+      // If sentence doesn't match any meaningful engineering intent, skip it
+      if (!claimType) continue;
+
+      let sensitivity: "none" | "flagged" = "none";
       if (
         [
           "off the record",
@@ -240,26 +324,15 @@ export class ExtractionService {
         sensitivity = "flagged";
       }
 
+      // Extract only technical entities (capitalized technical terms not in stopWords)
       const foundEntities: string[] = [];
-      const words = text.match(/\b[A-Z][a-zA-Z0-9_\-]+\b/g) || [];
-      const stopWords = new Set([
-        "Speaker",
-        "I",
-        "We",
-        "They",
-        "Then",
-        "So",
-        "However",
-        "Because",
-        "Muninn",
-        "The",
-      ]);
-
+      const words = text.match(/\b[A-Z][a-zA-Z0-9_\-]{2,}\b/g) || [];
       for (const w of words) {
-        if (!stopWords.has(w)) {
-          foundEntities.push(w);
-          if (!entities.some((e) => e.name === w)) {
-            entities.push({ type: "component", name: w });
+        const clean = w.trim();
+        if (!stopWords.has(clean.toLowerCase()) && clean.length > 2) {
+          foundEntities.push(clean);
+          if (!entities.some((e) => e.name.toLowerCase() === clean.toLowerCase())) {
+            entities.push({ type: "component", name: clean });
           }
         }
       }

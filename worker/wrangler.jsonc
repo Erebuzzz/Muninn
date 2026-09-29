@@ -12,6 +12,9 @@
       "enabled": true
     }
   },
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "DEFAULT_USER_ID": "00000000-0000-0000-0000-000000000001",
     "LLM_GATEWAY_URL": "https://llm-gateway.assemblyai.com/v1",

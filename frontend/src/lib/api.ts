@@ -132,6 +132,12 @@ export const api = {
     }
   },
 
+  async deleteClaim(id: string): Promise<{ success: boolean; message: string; deleted_id: string }> {
+    return await request(`/claims/${id}`, {
+      method: "DELETE",
+    });
+  },
+
   async createSession(title?: string): Promise<Conversation> {
     try {
       return await request("/sessions", {

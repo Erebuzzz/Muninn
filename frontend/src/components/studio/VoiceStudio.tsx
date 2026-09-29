@@ -262,6 +262,9 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
       }
     }
 
+    // Clear live capture transcript from the studio HUD upon completion
+    setTurns([]);
+    setCurrentSessionId(null);
     setStatus("idle");
   };
 

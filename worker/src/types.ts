@@ -9,6 +9,9 @@ export interface Bindings {
   JWT_SECRET?: string;
   RESEND_API_KEY?: string;
   RESEND_FROM_EMAIL?: string;
+  AI?: any;
+  GEMINI_API_KEY?: string;
+  OPENAI_API_KEY?: string;
 }
 
 export interface UserRecord {
