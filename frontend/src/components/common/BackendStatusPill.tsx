@@ -38,20 +38,18 @@ export const BackendStatusPill: React.FC<BackendStatusPillProps> = ({
     }
   };
 
-  const isEdge =
-    typeof window !== "undefined" &&
-    ((process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes("localhost")) ||
-      (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1"));
+  const apiUrl = api.getBaseUrl();
+  const isEdge = apiUrl.includes("workers.dev") || !apiUrl.includes("localhost");
 
   const onlineText = isEdge ? "Edge API Online" : "Local API Online";
   const onlineTitle = isEdge
     ? "Cloudflare Worker Edge API Online (muninn-api.kshitiz23kumar.workers.dev)"
-    : "Local Backend API Online (Port 8000)";
+    : `Local Backend API Online (${apiUrl})`;
 
   const offlineText = isEdge ? "Edge API Offline" : "API Offline";
   const offlineTitle = isEdge
     ? "Cloudflare Worker Edge API Unreachable"
-    : "Backend Server Disconnected on Port 8000";
+    : `Backend Server Disconnected (${apiUrl})`;
 
   if (online) {
     return (

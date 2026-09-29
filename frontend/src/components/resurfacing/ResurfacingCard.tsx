@@ -84,7 +84,7 @@ export const ResurfacingCard: React.FC<ResurfacingCardProps> = ({
       )}
 
       <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-800/60">
-        <span className="text-slate-500 font-mono text-[10px]">
+        <span className="text-slate-500 font-mono text-[10px]" suppressHydrationWarning>
           {new Date(item.created_at).toLocaleDateString([], { month: "short", day: "numeric" })}
         </span>
 

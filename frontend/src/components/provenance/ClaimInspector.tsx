@@ -86,7 +86,7 @@ export const ClaimInspector: React.FC<ClaimInspectorProps> = ({
                   <span className="capitalize font-mono px-2 py-0.5 rounded-full bg-slate-950/80 text-orange-400 border border-slate-800">
                     {data.claim.type}
                   </span>
-                  <span className="text-slate-400 font-mono text-[10px]">
+                  <span className="text-slate-400 font-mono text-[10px]" suppressHydrationWarning>
                     {new Date(data.claim.timestamp).toLocaleString()}
                   </span>
                 </div>

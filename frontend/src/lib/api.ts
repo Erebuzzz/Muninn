@@ -21,20 +21,13 @@ function setOnlineState(online: boolean) {
   }
 }
 
+const DEFAULT_API_URL = "https://muninn-api.kshitiz23kumar.workers.dev/api";
+
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
-  if (typeof window !== "undefined") {
-    if (
-      Capacitor.isNativePlatform() ||
-      window.location.protocol === "capacitor:" ||
-      (window.location.hostname === "localhost" && (!window.location.port || window.location.port === "80" || window.location.port === "443"))
-    ) {
-      return "http://10.0.2.2:8000/api";
-    }
-  }
-  return "http://localhost:8000/api";
+  return DEFAULT_API_URL;
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -371,5 +364,8 @@ export const api = {
 
   async logout(): Promise<void> {
     await localStore.clearAuth();
+  },
+  getBaseUrl(): string {
+    return getBaseUrl();
   },
 };
