@@ -52,6 +52,11 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
   const audioChunksRef = useRef<Blob[]>([]);
   const turnsEndRef = useRef<HTMLDivElement | null>(null);
   const nextAudioPlaybackTimeRef = useRef<number>(0);
+  const captureModeRef = useRef<"copilot" | "scribe">(captureMode);
+
+  useEffect(() => {
+    captureModeRef.current = captureMode;
+  }, [captureMode]);
 
   // Live timer for capture duration
   useEffect(() => {
@@ -150,9 +155,13 @@ export const VoiceStudio: React.FC<VoiceStudioProps> = ({
             soundFX.playTurnDetected();
             addTurn("Speaker A", msg.text);
           } else if (msg.type === "transcript.agent" && msg.text) {
-            addTurn("Muninn", msg.text);
+            if (captureModeRef.current === "copilot") {
+              addTurn("Muninn", msg.text);
+            }
           } else if (msg.type === "reply.audio" && msg.data) {
-            playAgentAudio(msg.data, audioCtx);
+            if (captureModeRef.current === "copilot") {
+              playAgentAudio(msg.data, audioCtx);
+            }
           }
         } catch (err) {
           console.error("WebSocket message parse error", err);
