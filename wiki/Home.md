@@ -44,6 +44,6 @@ flowchart TD
 - **Production Web Application**: [https://muninn-nmk.pages.dev](https://muninn-nmk.pages.dev)
 - **Global Edge API**: [https://muninn-api.kshitiz23kumar.workers.dev](https://muninn-api.kshitiz23kumar.workers.dev)
 - **Interactive Documentation Codex**: [https://muninn-nmk.pages.dev/docs](https://muninn-nmk.pages.dev/docs)
-- **Slide Presentation (Pitch Deck)**: [Google Slides Pitch Deck](https://docs.google.com/presentation/d/1BJt_kQttHV79CScvn4gGHwbHylm2Beor8tE13aguJwA/edit)
+- **Slide Presentation (Pitch Deck)**: [Google Slides Pitch Deck](https://docs.google.com/presentation/d/1b7r2OR6ndA9duCx3yO4kWLP61wN2_fHB/edit?usp=sharing&ouid=117250218335515295859&rtpof=true&sd=true)
 - **Android Mobile & Tablet APK**: [GitHub Releases v1.5](https://github.com/Erebuzzz/Muninn/releases)
 - **Public Repository**: [https://github.com/Erebuzzz/Muninn](https://github.com/Erebuzzz/Muninn)

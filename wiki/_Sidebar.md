@@ -14,5 +14,5 @@
 - [Web Application](https://muninn-nmk.pages.dev)
 - [Edge Worker](https://muninn-api.kshitiz23kumar.workers.dev)
 - [Documentation Codex](https://muninn-nmk.pages.dev/docs)
-- [Pitch Presentation](https://docs.google.com/presentation/d/1BJt_kQttHV79CScvn4gGHwbHylm2Beor8tE13aguJwA/edit)
+- [Pitch Presentation](https://docs.google.com/presentation/d/1b7r2OR6ndA9duCx3yO4kWLP61wN2_fHB/edit?usp=sharing&ouid=117250218335515295859&rtpof=true&sd=true)
 - [GitHub Releases](https://github.com/Erebuzzz/Muninn/releases)

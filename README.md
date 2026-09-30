@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-muninn--nmk.pages.dev-orange.svg)](https://muninn-nmk.pages.dev)
 [![API Status](https://img.shields.io/badge/API-muninn--api.workers.dev-brightgreen.svg)](https://muninn-api.kshitiz23kumar.workers.dev/api/health)
-[![Pitch Deck](https://img.shields.io/badge/Pitch%20Deck-Google%20Slides-4285f4.svg)](https://docs.google.com/presentation/d/1BJt_kQttHV79CScvn4gGHwbHylm2Beor8tE13aguJwA/edit)
+[![Pitch Deck](https://img.shields.io/badge/Pitch%20Deck-Google%20Slides-4285f4.svg)](https://docs.google.com/presentation/d/1b7r2OR6ndA9duCx3yO4kWLP61wN2_fHB/edit?usp=sharing&ouid=117250218335515295859&rtpof=true&sd=true)
 [![Cloudflare Workers](https://img.shields.io/badge/Runtime-Cloudflare%20Workers-f38020.svg)](https://workers.cloudflare.com)
 [![Next.js 15](https://img.shields.io/badge/Frontend-Next.js%2015-black.svg)](https://nextjs.org)
 [![Capacitor Android](https://img.shields.io/badge/Android-Mobile%20%26%20Tablet%20APK-3ddc84.svg)](https://github.com/Erebuzzz/Muninn/releases)
@@ -23,7 +23,7 @@ Muninn is inspired by one of Odin's two sacred raven messengers from Norse mytho
 - **Live Production Application**: [https://muninn-nmk.pages.dev](https://muninn-nmk.pages.dev)
 - **Cloudflare Global Edge API**: [https://muninn-api.kshitiz23kumar.workers.dev](https://muninn-api.kshitiz23kumar.workers.dev)
 - **Interactive Documentation Codex**: [https://muninn-nmk.pages.dev/docs](https://muninn-nmk.pages.dev/docs)
-- **Slide Presentation (Pitch Deck)**: [Google Slides Pitch Deck](https://docs.google.com/presentation/d/1BJt_kQttHV79CScvn4gGHwbHylm2Beor8tE13aguJwA/edit)
+- **Slide Presentation (Pitch Deck)**: [Google Slides Pitch Deck](https://docs.google.com/presentation/d/1b7r2OR6ndA9duCx3yO4kWLP61wN2_fHB/edit?usp=sharing&ouid=117250218335515295859&rtpof=true&sd=true)
 - **Android Mobile & Tablet APK**: [Muninn GitHub Releases](https://github.com/Erebuzzz/Muninn/releases)
 - **Web Storage**: Ephemeral guest sandbox in session storage; persistent cloud retention upon optional sign-in.
 - **Mobile Storage**: Local-first hardware persistence via Android SharedPreferences; zero mandatory cloud account.
