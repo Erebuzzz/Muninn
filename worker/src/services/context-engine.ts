@@ -323,9 +323,49 @@ export class ContextEngineService {
       .map((c) => `- [Citation: ${c.id}] (${c.type}, ${c.confidence || "unverified"}): ${c.text}`)
       .join("\n");
 
+    // 1. Prioritize Cloudflare Workers AI for sub-second edge synthesis
+    if (env.AI) {
+      try {
+        console.log("[ContextEngine] Running Workers AI (@cf/meta/llama-3.3-70b-instruct)...");
+        const aiResp: any = await env.AI.run("@cf/meta/llama-3.3-70b-instruct", {
+          messages: [
+            {
+              role: "system",
+              content: `${CHAT_SYSTEM_PROMPT}
+
+CRITICAL RULES:
+1. Synthesize a concise, natural, direct answer in 1 to 3 sentences.
+2. Directly answer what was decided, observed, or assigned based on the provided claims.
+3. Do not dump raw UUIDs or JSON. Speak naturally as an engineering memory assistant.`,
+            },
+            {
+              role: "user",
+              content: `USER QUESTION: ${query}\n\nGROUND TRUTH CLAIMS:\n${claimsContext}`,
+            },
+          ],
+          temperature: 0.2,
+          max_tokens: 512,
+        });
+
+        const answerText = (aiResp?.response || "").trim();
+        if (answerText) {
+          return {
+            answer: answerText,
+            citations,
+            precedent_found: true,
+          };
+        }
+      } catch (err) {
+        console.error("[ContextEngine] Workers AI error:", err);
+      }
+    }
+
+    const cleanFallback = `Based on your recorded technical sessions:\n\n` +
+      selected.map((c) => `• ${c.text}`).join("\n\n");
+
     if (!env.ASSEMBLYAI_API_KEY || env.ASSEMBLYAI_API_KEY.includes("your_assemblyai_api_key")) {
       return {
-        answer: `Based on your recorded memory:\n${claimsContext}`,
+        answer: cleanFallback,
         citations,
         precedent_found: true,
       };
@@ -356,14 +396,12 @@ export class ContextEngineService {
           ],
           temperature: 0.2,
           max_tokens: 800,
-          fallbacks: [{ model: "gemini-2.5-flash" }],
-          fallback_config: { depth: 1, retry: true },
         }),
       });
 
       if (!resp.ok) {
         return {
-          answer: `Found relevant stored claims:\n${claimsContext}`,
+          answer: cleanFallback,
           citations,
           precedent_found: true,
         };
@@ -375,22 +413,16 @@ export class ContextEngineService {
         choices: Array<{ message: { content: string } }>;
       };
 
-      console.log(
-        `[LLM Gateway] Chat answered. request_id: ${data.request_id || "unknown"}, model: ${
-          data.model || model
-        }`
-      );
-
       const answerText = data.choices[0]?.message?.content?.trim() || "";
 
       return {
-        answer: answerText,
+        answer: answerText || cleanFallback,
         citations,
         precedent_found: true,
       };
     } catch {
       return {
-        answer: `Found relevant stored claims:\n${claimsContext}`,
+        answer: cleanFallback,
         citations,
         precedent_found: true,
       };
