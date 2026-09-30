@@ -100,49 +100,57 @@ export class ExtractionService {
     transcriptText: string,
     env: Bindings
   ): Promise<ExtractionResult> {
-    // 1. Try Cloudflare Workers AI natively (Llama 3.3 70B Instruct)
+    // 1. Try Cloudflare Workers AI natively
     if (env.AI) {
-      try {
-        console.log("[Extraction] Calling Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct)...");
-        const aiResp: any = await env.AI.run("@cf/meta/llama-3.3-70b-instruct", {
-          messages: [
-            {
-              role: "system",
-              content: `${EXTRACTION_SYSTEM_PROMPT}
+      const modelsToTry = [
+        "@cf/meta/llama-3.1-8b-instruct-fast",
+        "@cf/meta/llama-3.2-3b-instruct",
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      ];
+      for (const m of modelsToTry) {
+        try {
+          console.log(`[Extraction] Calling Cloudflare Workers AI (${m})...`);
+          const aiResp: any = await env.AI.run(m as any, {
+            messages: [
+              {
+                role: "system",
+                content: `${EXTRACTION_SYSTEM_PROMPT}
 
 CRITICAL RULES:
 1. Infer the substantive engineering activities, decisions, and tasks from the transcript.
-2. DO NOT extract casual greetings, small talk, pleasantries, filler phrases, testing remarks, or conversational artifacts (e.g. "thank god", "hello", "muninn is listening", "just testing this", "it's just a test run", "so", "we'll see what this is", "can you hear me").
-3. If the transcript is only casual banter, greetings, or a mic test with NO actual engineering decisions, tasks, or hypotheses, output strictly:
+2. If a statement asks a question or is framed as an inquiry (e.g. "Question: should we order..."), classify its type strictly as "question".
+3. DO NOT extract casual greetings, small talk, pleasantries, filler phrases, testing remarks, or conversational artifacts.
+4. If the transcript is only casual banter, greetings, or a mic test with NO actual engineering decisions, tasks, or hypotheses, output strictly:
 {"entities": [], "claims": [], "relationships": []}
-4. For entities, extract real technical components, modules, systems, projects, or people. NEVER extract common words, verbs, or conversational words.`
-            },
-            {
-              role: "user",
-              content: `Transcript to extract:\n\n${transcriptText}`
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 2048,
-        });
+5. For entities, extract real technical components, modules, systems, projects, or people. NEVER extract common words, verbs, or conversational words.`
+              },
+              {
+                role: "user",
+                content: `Transcript to extract:\n\n${transcriptText}`
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 2048,
+          });
 
-        let rawText = (aiResp?.response || "").trim();
-        if (rawText) {
-          if (rawText.startsWith("```")) {
-            rawText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+          let rawText = (aiResp?.response || "").trim();
+          if (rawText) {
+            if (rawText.startsWith("```")) {
+              rawText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+            }
+            const parsed = JSON.parse(rawText) as ExtractionResult;
+            if (parsed && Array.isArray(parsed.claims)) {
+              console.log(`[Extraction] Workers AI (${m}) extracted ${parsed.claims.length} claims, ${parsed.entities?.length || 0} entities.`);
+              return {
+                entities: parsed.entities || [],
+                claims: parsed.claims || [],
+                relationships: parsed.relationships || [],
+              };
+            }
           }
-          const parsed = JSON.parse(rawText) as ExtractionResult;
-          if (parsed && Array.isArray(parsed.claims)) {
-            console.log(`[Extraction] Workers AI extracted ${parsed.claims.length} claims, ${parsed.entities?.length || 0} entities.`);
-            return {
-              entities: parsed.entities || [],
-              claims: parsed.claims || [],
-              relationships: parsed.relationships || [],
-            };
-          }
+        } catch (err) {
+          console.warn(`[Extraction] Workers AI (${m}) failed:`, err);
         }
-      } catch (err) {
-        console.warn("[Extraction] Workers AI failed or timed out, trying next provider:", err);
       }
     }
 
@@ -282,25 +290,32 @@ CRITICAL RULES:
 
       let claimType: "decision" | "task" | "question" | "hypothesis" | "observation" | null = null;
       if (
-        ["will do", "need to", "action item", "todo", "task", "ship", "implement", "redesign", "fix", "buy", "order"].some(
-          (w) => lower.includes(w)
-        )
+        lower.startsWith("question") ||
+        ["?", "should we", "how do we", "what if", "whether we", "question:"].some((w) => lower.includes(w))
       ) {
-        claimType = "task";
+        claimType = "question";
       } else if (
+        lower.startsWith("decision") ||
         ["decided", "decision", "we chose", "let's go with", "agreed", "pause", "approved"].some((w) =>
           lower.includes(w)
         )
       ) {
         claimType = "decision";
-      } else if (["?", "should we", "how do we", "what if", "whether we"].some((w) => lower.includes(w))) {
-        claimType = "question";
       } else if (
+        lower.startsWith("task") ||
+        ["will do", "need to", "action item", "todo", "task", "ship", "implement", "redesign", "fix", "benchmark", "buy", "order"].some(
+          (w) => lower.includes(w)
+        )
+      ) {
+        claimType = "task";
+      } else if (
+        lower.startsWith("hypothesis") ||
         ["maybe", "might be", "hypothesis", "could be", "theory", "suspect"].some((w) => lower.includes(w))
       ) {
         claimType = "hypothesis";
       } else if (
-        ["noticed", "measured", "overheating", "voltage", "revision", "pinout", "bracket", "firmware", "bug", "fails"].some((w) => lower.includes(w))
+        lower.startsWith("observation") ||
+        ["noticed", "measured", "latency", "overheating", "voltage", "revision", "pinout", "bracket", "firmware", "bug", "fails"].some((w) => lower.includes(w))
       ) {
         claimType = "observation";
       }

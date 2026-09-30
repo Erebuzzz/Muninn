@@ -1,14 +1,16 @@
 import { DbClient } from "../db/client";
 import { Bindings, ChatQueryResponse, CitationItem } from "../types";
 
-export const CHAT_SYSTEM_PROMPT = `You are Muninn, an assistant querying an engineer's living memory.
-You are given a user question and a list of ground-truth claims extracted from their recorded conversations.
+export const CHAT_SYSTEM_PROMPT = `You are Muninn, an intelligent living memory assistant for technical teams.
+You are given a user question and ground-truth claims extracted from their recorded technical discussions.
 
-Your job:
-1. Answer the question accurately using ONLY the provided claims as ground truth.
-2. Every major claim or decision you cite must reference its citation ID [Citation: <id>].
-3. If no relevant precedent or claim is found, state clearly that no recorded memory covers this topic. Never invent technical details or dates.
-4. Keep the answer direct, concise, and structured.`;
+YOUR TASK:
+1. Answer the user's question directly and intelligently by synthesizing the provided claims into a coherent answer.
+2. Make intelligent inferences: explicitly state who is assigned to what, what decisions were approved, what problems were observed, and what questions remain unanswered.
+3. Be concise and conversational (1 to 3 clear sentences). Never be robotic or monotonous.
+4. If asked whether a decision was made about an item that was only asked as an open question, clarify that no decision was made and that it remains an unresolved open question.
+5. DO NOT just recite or dump claims as bullet lists. Synthesize a smart, coherent answer.
+6. DO NOT include citation IDs like [Citation: ...] or raw JSON in your prose text; keep your wording natural and human.`;
 
 export class ContextEngineService {
   static async getDependencyChain(
@@ -325,38 +327,45 @@ export class ContextEngineService {
 
     // 1. Prioritize Cloudflare Workers AI for sub-second edge synthesis
     if (env.AI) {
-      try {
-        console.log("[ContextEngine] Running Workers AI (@cf/meta/llama-3.3-70b-instruct)...");
-        const aiResp: any = await env.AI.run("@cf/meta/llama-3.3-70b-instruct", {
-          messages: [
-            {
-              role: "system",
-              content: `${CHAT_SYSTEM_PROMPT}
+      const modelsToTry = [
+        "@cf/meta/llama-3.1-8b-instruct-fast",
+        "@cf/meta/llama-3.2-3b-instruct",
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      ];
+      for (const m of modelsToTry) {
+        try {
+          const aiResp: any = await env.AI.run(m as any, {
+            messages: [
+              {
+                role: "system",
+                content: `${CHAT_SYSTEM_PROMPT}
 
 CRITICAL RULES:
 1. Synthesize a concise, natural, direct answer in 1 to 3 sentences.
 2. Directly answer what was decided, observed, or assigned based on the provided claims.
-3. Do not dump raw UUIDs or JSON. Speak naturally as an engineering memory assistant.`,
-            },
-            {
-              role: "user",
-              content: `USER QUESTION: ${query}\n\nGROUND TRUTH CLAIMS:\n${claimsContext}`,
-            },
-          ],
-          temperature: 0.2,
-          max_tokens: 512,
-        });
+3. If asked whether a decision was made about an item that was only an open question (e.g. directional mic), explicitly clarify that no decision was made and it remains an open question.
+4. Do not dump raw UUIDs or JSON. Speak naturally as an engineering memory assistant.`,
+              },
+              {
+                role: "user",
+                content: `USER QUESTION: ${query}\n\nGROUND TRUTH CLAIMS:\n${claimsContext}`,
+              },
+            ],
+            temperature: 0.2,
+            max_tokens: 512,
+          });
 
-        const answerText = (aiResp?.response || "").trim();
-        if (answerText) {
-          return {
-            answer: answerText,
-            citations,
-            precedent_found: true,
-          };
+          const answerText = (aiResp?.response || "").trim();
+          if (answerText) {
+            return {
+              answer: answerText,
+              citations,
+              precedent_found: true,
+            };
+          }
+        } catch (err) {
+          console.warn(`[ContextEngine] Workers AI model ${m} failed:`, err);
         }
-      } catch (err) {
-        console.error("[ContextEngine] Workers AI error:", err);
       }
     }
 
