@@ -3,6 +3,8 @@
 
 # Specs and prompt documents
 Muninn Full Implementation Spec.html
+demo_video_script.md
+*video_script*
 
 # Dependencies & Build
 node_modules/
@@ -10,6 +12,7 @@ node_modules/
 out/
 build/
 dist/
+*.tsbuildinfo
 __pycache__/
 *.pyc
 .pytest_cache/

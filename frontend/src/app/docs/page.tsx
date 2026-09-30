@@ -286,6 +286,41 @@ export default function DocsPage() {
 
                   <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
                     <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-violet-500" />
+                      Voice Agent Operating Modes: Co-Pilot vs Scribe
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                      <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800">
+                        <span className="font-mono text-xs font-semibold text-violet-600 dark:text-violet-400 block mb-1">
+                          1. Co-Pilot Mode (Active Peer)
+                        </span>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Muninn actively collaborates in technical discussions, answering architecture questions, clarifying trade-offs, and confirming technical decisions with live spoken audio feedback.
+                        </p>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800">
+                        <span className="font-mono text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">
+                          2. Scribe Mode (Quiet Companion)
+                        </span>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Muninn operates silently in the background without interrupting, continuously buffering 24kHz audio and extracting structured claims only when the capture concludes.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      Granular Memory & Session Deletion
+                    </h3>
+                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      You retain complete sovereign control over your memory graph. You can delete an entire conversation session directly from the session header with a single click, or remove individual claims and graph nodes from the expanded session view or Claim Inspector modal. Deletions cascade cleanly across relationships, task states, resurfacing events, and orphan entities.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-sky-500" />
                       Exploring Ground-Truth Citations
                     </h3>
