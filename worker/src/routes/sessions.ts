@@ -10,6 +10,8 @@ import { rateLimiter } from "../middleware/rate-limit";
 
 export const sessionsRouter = new Hono<AppEnv>();
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Vends AssemblyAI Voice Agent tokens.
  * Restricted to authenticated users to prevent upstream API quota drainage.
@@ -115,91 +117,129 @@ sessionsRouter.get("/", async (c) => {
 sessionsRouter.get("/:id", async (c) => {
   const sql = getDb(c.env.DATABASE_URL);
   const sessionId = c.req.param("id");
+
+  if (!UUID_REGEX.test(sessionId)) {
+    return c.json({ detail: "Invalid session ID format" }, 400);
+  }
+
   const userId = await getOptionalAuthUserId(c);
   const defaultUserId = c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
 
-  const convRows = (await sql(
-    `SELECT * FROM conversations WHERE id = $1 AND (user_id = $2 OR user_id = $3) LIMIT 1`,
-    [sessionId, userId, defaultUserId]
-  )) as any[];
+  try {
+    const convRows = (await sql(
+      `SELECT * FROM conversations WHERE id = $1::uuid AND (user_id = $2::uuid OR user_id = $3::uuid) LIMIT 1`,
+      [sessionId, userId, defaultUserId]
+    )) as any[];
 
-  if (convRows.length === 0) {
-    return c.json({ detail: "Session not found" }, 404);
-  }
-  const conv = convRows[0];
+    if (convRows.length === 0) {
+      return c.json({ detail: "Session not found" }, 404);
+    }
+    const conv = convRows[0];
 
-  const claimsRows = (await sql(
-    `SELECT
-       c.*,
-       sp.diarization_tag AS speaker_tag,
-       ts.status AS task_status,
-       ts.blocked_by AS task_blocked_by,
-       ts.resurfaced_at AS task_resurfaced_at,
-       COALESCE(
-         json_agg(
-           json_build_object(
-             'id', e.id,
-             'name', e.name,
-             'type', e.type,
-             'first_seen_at', e.first_seen_at
-           )
-         ) FILTER (WHERE e.id IS NOT NULL),
-         '[]'
-       ) AS entities
-     FROM claims c
-     LEFT JOIN speakers sp ON sp.id = c.speaker_id
-     LEFT JOIN task_state ts ON ts.claim_id = c.id
-     LEFT JOIN claim_entities ce ON ce.claim_id = c.id
-     LEFT JOIN entities e ON e.id = ce.entity_id
-     WHERE c.conversation_id = $1
-     GROUP BY c.id, sp.diarization_tag, ts.status, ts.blocked_by, ts.resurfaced_at
-     ORDER BY c.timestamp ASC`,
-    [sessionId]
-  )) as any[];
-
-  const formattedClaims = claimsRows.map((c) => ({
-    id: c.id,
-    conversation_id: c.conversation_id,
-    speaker_id: c.speaker_id,
-    speaker_tag: c.speaker_tag,
-    type: c.type,
-    text: c.text,
-    confidence: c.confidence,
-    sensitivity: c.sensitivity,
-    timestamp: c.timestamp,
-    entities: c.entities || [],
-    task_state: c.task_status
-      ? {
-          status: c.task_status,
-          blocked_by: c.task_blocked_by,
-          resurfaced_at: c.task_resurfaced_at || [],
-        }
-      : null,
-  }));
-
-  const speakerRows = (await sql(
-    `SELECT id, diarization_tag AS tag, resolved_name FROM speakers WHERE conversation_id = $1`,
-    [sessionId]
-  )) as any[];
-
-  const entitiesMap = new Map<string, any>();
-  for (const c of formattedClaims) {
-    for (const e of c.entities) {
-      if (!entitiesMap.has(e.id)) {
-        entitiesMap.set(e.id, e);
+    // Safely parse raw_transcript if it was stored as a JSON string
+    if (typeof conv.raw_transcript === "string") {
+      try {
+        conv.raw_transcript = JSON.parse(conv.raw_transcript);
+      } catch {
+        // Keep as string if parsing fails
       }
     }
-  }
 
-  return c.json({
-    conversation: {
-      ...conv,
-      claim_count: formattedClaims.length,
-    },
-    claims: formattedClaims,
-    entities: Array.from(entitiesMap.values()),
-    speakers: speakerRows,
-  });
+    const claimsRows = (await sql(
+      `SELECT
+         c.id,
+         c.conversation_id,
+         c.speaker_id,
+         c.type,
+         c.text,
+         c.confidence,
+         c.sensitivity,
+         c.timestamp,
+         sp.diarization_tag AS speaker_tag,
+         ts.status AS task_status,
+         ts.blocked_by AS task_blocked_by,
+         ts.resurfaced_at AS task_resurfaced_at
+       FROM claims c
+       LEFT JOIN speakers sp ON sp.id = c.speaker_id
+       LEFT JOIN task_state ts ON ts.claim_id = c.id
+       WHERE c.conversation_id = $1::uuid
+       ORDER BY c.timestamp ASC`,
+      [sessionId]
+    )) as any[];
+
+    const ceRows = (await sql(
+      `SELECT ce.claim_id, e.id, e.name, e.type, e.first_seen_at
+       FROM claim_entities ce
+       JOIN entities e ON e.id = ce.entity_id
+       JOIN claims c ON c.id = ce.claim_id
+       WHERE c.conversation_id = $1::uuid`,
+      [sessionId]
+    )) as any[];
+
+    const claimEntitiesMap = new Map<string, any[]>();
+    const entitiesMap = new Map<string, any>();
+
+    for (const ce of ceRows) {
+      const entity = {
+        id: ce.id,
+        name: ce.name,
+        type: ce.type,
+        first_seen_at: ce.first_seen_at,
+      };
+      if (!claimEntitiesMap.has(ce.claim_id)) {
+        claimEntitiesMap.set(ce.claim_id, []);
+      }
+      claimEntitiesMap.get(ce.claim_id)!.push(entity);
+
+      if (!entitiesMap.has(ce.id)) {
+        entitiesMap.set(ce.id, entity);
+      }
+    }
+
+    const formattedClaims = claimsRows.map((c) => ({
+      id: c.id,
+      conversation_id: c.conversation_id,
+      speaker_id: c.speaker_id,
+      speaker_tag: c.speaker_tag,
+      type: c.type,
+      text: c.text,
+      confidence: c.confidence,
+      sensitivity: c.sensitivity,
+      timestamp: c.timestamp,
+      entities: claimEntitiesMap.get(c.id) || [],
+      task_state: c.task_status
+        ? {
+            status: c.task_status,
+            blocked_by: c.task_blocked_by,
+            resurfaced_at: c.task_resurfaced_at || [],
+          }
+        : null,
+    }));
+
+    const speakerRows = (await sql(
+      `SELECT id, diarization_tag AS tag, resolved_name FROM speakers WHERE conversation_id = $1::uuid`,
+      [sessionId]
+    )) as any[];
+
+    return c.json({
+      conversation: {
+        ...conv,
+        claim_count: formattedClaims.length,
+      },
+      claims: formattedClaims,
+      entities: Array.from(entitiesMap.values()),
+      speakers: speakerRows,
+    });
+  } catch (err: any) {
+    console.error(`[Sessions] Error fetching session ${sessionId}:`, err);
+    return c.json(
+      {
+        detail: "Failed to fetch session detail",
+        error: err?.message || String(err),
+      },
+      500
+    );
+  }
 });
 
 /**
@@ -404,12 +444,16 @@ sessionsRouter.post("/quick-note", rateLimiter(60000, 6, "sessions-quicknote"), 
  */
 sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (c) => {
   const sessionId = c.req.param("id");
+  if (!UUID_REGEX.test(sessionId)) {
+    return c.json({ error: "Invalid session ID format" }, 400);
+  }
+
   const sql = getDb(c.env.DATABASE_URL);
   const userId = (await getOptionalAuthUserId(c)) || c.env.DEFAULT_USER_ID || "00000000-0000-0000-0000-000000000001";
 
   // Check if session exists and belongs to the user (or default user)
   const existing = (await sql(
-    `SELECT id, user_id FROM conversations WHERE id = $1 AND (user_id = $2 OR user_id = '00000000-0000-0000-0000-000000000001') LIMIT 1`,
+    `SELECT id, user_id FROM conversations WHERE id = $1::uuid AND (user_id = $2::uuid OR user_id = '00000000-0000-0000-0000-000000000001'::uuid) LIMIT 1`,
     [sessionId, userId]
   )) as Array<{ id: string; user_id: string }>;
 
@@ -421,41 +465,41 @@ sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (
     // 1. Delete resurfacing events
     await sql(
       `DELETE FROM resurfacing_events 
-       WHERE conversation_id = $1 
-          OR subject_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+       WHERE conversation_id = $1::uuid 
+          OR subject_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
 
     // 2. Delete relationships involving claims from this conversation
     await sql(
       `DELETE FROM relationships 
-       WHERE source_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)
-          OR target_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+       WHERE source_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)
+          OR target_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
 
     // 3. Delete claim_entities
     await sql(
       `DELETE FROM claim_entities 
-       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
 
     // 4. Delete task states
     await sql(
       `DELETE FROM task_state 
-       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1)`,
+       WHERE claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
 
     // 5. Delete claims
-    await sql(`DELETE FROM claims WHERE conversation_id = $1`, [sessionId]);
+    await sql(`DELETE FROM claims WHERE conversation_id = $1::uuid`, [sessionId]);
 
     // 6. Delete speakers
-    await sql(`DELETE FROM speakers WHERE conversation_id = $1`, [sessionId]);
+    await sql(`DELETE FROM speakers WHERE conversation_id = $1::uuid`, [sessionId]);
 
     // 7. Delete conversation record
-    await sql(`DELETE FROM conversations WHERE id = $1`, [sessionId]);
+    await sql(`DELETE FROM conversations WHERE id = $1::uuid`, [sessionId]);
 
     // 8. Clean up orphan entities no longer referenced by any remaining claims for this user
     try {
