@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/cover_banner.jpg" alt="Muninn AI Living Memory" width="100%" />
+  <img src="frontend/public/cover_banner.svg" alt="Muninn Living Memory" width="100%" />
 </p>
 
 # Muninn
@@ -371,6 +371,6 @@ android run --device=emulator-5554
 
 ## 10. Developer Details
 
-- **Author**: Kshitiz Kumar
+- **Author**: Erebus
 - **GitHub**: [github.com/Erebuzzz](https://github.com/Erebuzzz)
 - **Contact Email**: [kshitiz23kumar@gmail.com](mailto:kshitiz23kumar@gmail.com)

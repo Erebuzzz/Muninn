@@ -1,0 +1,375 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#141c2e" />
+      <stop offset="45%" stop-color="#0a0f1d" />
+      <stop offset="100%" stop-color="#03060d" />
+    </radialGradient>
+
+    <!-- Celestial Orb Sun Glow -->
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff7ed" />
+      <stop offset="25%" stop-color="#fed7aa" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#f97316" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="coreAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35" />
+      <stop offset="60%" stop-color="#0284c7" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#03060d" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Facet Shading Gradients -->
+    <linearGradient id="goldFacetLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fed7aa" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#f97316" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#9a3412" stop-opacity="0.6" />
+    </linearGradient>
+
+    <linearGradient id="goldFacetRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fed7aa" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#f97316" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#9a3412" stop-opacity="0.6" />
+    </linearGradient>
+
+    <linearGradient id="cyanFacet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.3" />
+    </linearGradient>
+
+    <linearGradient id="obsidianFacet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.8" />
+    </linearGradient>
+
+    <linearGradient id="goldTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="35%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="highGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Deep Space Canvas Background -->
+  <rect width="1600" height="900" fill="url(#bgGlow)" />
+
+  <!-- Constellation Nodes & Knowledge Graph Edges (Background Layer) -->
+  <g opacity="0.45" stroke="#38bdf8" stroke-width="0.8">
+    <!-- Graph Links Left -->
+    <line x1="120" y1="240" x2="280" y2="180" stroke-dasharray="3 3" />
+    <line x1="280" y1="180" x2="420" y2="290" />
+    <line x1="420" y1="290" x2="250" y2="380" />
+    <line x1="250" y1="380" x2="150" y2="520" stroke-dasharray="4 4" />
+    <line x1="250" y1="380" x2="380" y2="460" />
+    <line x1="380" y1="460" x2="520" y2="390" />
+    <line x1="420" y1="290" x2="590" y2="220" />
+
+    <!-- Graph Links Right -->
+    <line x1="1480" y1="240" x2="1320" y2="180" stroke-dasharray="3 3" />
+    <line x1="1320" y1="180" x2="1180" y2="290" />
+    <line x1="1180" y1="290" x2="1350" y2="380" />
+    <line x1="1350" y1="380" x2="1450" y2="520" stroke-dasharray="4 4" />
+    <line x1="1350" y1="380" x2="1220" y2="460" />
+    <line x1="1220" y1="460" x2="1080" y2="390" />
+    <line x1="1180" y1="290" x2="1010" y2="220" />
+
+    <!-- Constellation Graph Nodes Left -->
+    <circle cx="120" cy="240" r="3" fill="#38bdf8" />
+    <circle cx="280" cy="180" r="4.5" fill="#f97316" filter="url(#softGlow)" />
+    <circle cx="420" cy="290" r="3.5" fill="#38bdf8" />
+    <circle cx="250" cy="380" r="3" fill="#38bdf8" />
+    <circle cx="150" cy="520" r="4" fill="#f97316" />
+    <circle cx="380" cy="460" r="3" fill="#38bdf8" />
+    <circle cx="520" cy="390" r="4.5" fill="#38bdf8" filter="url(#softGlow)" />
+    <circle cx="590" cy="220" r="3.5" fill="#f97316" />
+
+    <!-- Constellation Graph Nodes Right -->
+    <circle cx="1480" cy="240" r="3" fill="#38bdf8" />
+    <circle cx="1320" cy="180" r="4.5" fill="#f97316" filter="url(#softGlow)" />
+    <circle cx="1180" cy="290" r="3.5" fill="#38bdf8" />
+    <circle cx="1350" cy="380" r="3" fill="#38bdf8" />
+    <circle cx="1450" cy="520" r="4" fill="#f97316" />
+    <circle cx="1220" cy="460" r="3" fill="#38bdf8" />
+    <circle cx="1080" cy="390" r="4.5" fill="#38bdf8" filter="url(#softGlow)" />
+    <circle cx="1010" cy="220" r="3.5" fill="#f97316" />
+  </g>
+
+  <!-- 24kHz Acoustic Waveform Streams (Flowing Cyan & Gold Harmonics) -->
+  <g opacity="0.38" fill="none">
+    <!-- Stream 1: Cyan High Frequency Harmonic -->
+    <path
+      d="M -50,430 Q 150,370 350,440 T 750,420 T 1150,450 T 1550,380 T 1650,420"
+      stroke="#38bdf8"
+      stroke-width="1.8"
+    />
+    <path
+      d="M -50,435 Q 150,480 350,410 T 750,460 T 1150,410 T 1550,470 T 1650,430"
+      stroke="#0284c7"
+      stroke-width="1.2"
+      stroke-dasharray="6 4"
+    />
+
+    <!-- Stream 2: Amber Golden Voice Carrier Wave -->
+    <path
+      d="M -50,450 Q 200,530 450,430 T 900,480 T 1350,420 T 1650,460"
+      stroke="#f97316"
+      stroke-width="2.2"
+      filter="url(#softGlow)"
+    />
+    <path
+      d="M -50,460 Q 200,390 450,480 T 900,430 T 1350,490 T 1650,440"
+      stroke="#fb923c"
+      stroke-width="1.2"
+    />
+  </g>
+
+  <!-- Central Celestial Aura Field -->
+  <circle cx="800" cy="330" r="360" fill="url(#coreAura)" />
+
+  <!-- Sacred Geometry Runic Circles Behind Raven -->
+  <g transform="translate(800, 330)">
+    <!-- Outer Runic Dial -->
+    <circle r="290" fill="none" stroke="#f97316" stroke-width="1.5" stroke-opacity="0.45" stroke-dasharray="8 6" />
+    <circle r="275" fill="none" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.3" />
+    <circle r="220" fill="none" stroke="#f97316" stroke-width="1.2" stroke-opacity="0.35" stroke-dasharray="3 4" />
+
+    <!-- Octagonal Norse Compass Polygon -->
+    <polygon
+      points="
+        0,-250 177,-177 250,0 177,177
+        0,250 -177,177 -250,0 -177,-177
+      "
+      fill="none"
+      stroke="#38bdf8"
+      stroke-width="1"
+      stroke-opacity="0.4"
+    />
+
+    <!-- Secondary Hexagonal Axis -->
+    <polygon
+      points="
+        0,-200 173,-100 173,100
+        0,200 -173,100 -173,-100
+      "
+      fill="none"
+      stroke="#f97316"
+      stroke-width="0.8"
+      stroke-opacity="0.25"
+      stroke-dasharray="5 5"
+    />
+
+    <!-- Radiating Ray Conduits -->
+    <line x1="0" y1="-290" x2="0" y2="290" stroke="#f97316" stroke-width="0.8" stroke-opacity="0.3" />
+    <line x1="-290" y1="0" x2="290" y2="0" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.3" />
+    <line x1="-205" y1="-205" x2="205" y2="205" stroke="#f97316" stroke-width="0.6" stroke-opacity="0.25" stroke-dasharray="4 4" />
+    <line x1="-205" y1="205" x2="205" y2="-205" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.25" stroke-dasharray="4 4" />
+  </g>
+
+  <!-- Glowing Celestial Sun Orb (Above Raven Crest) -->
+  <g transform="translate(800, 130)">
+    <circle r="90" fill="url(#sunGlow)" filter="url(#highGlow)" />
+    <circle r="36" fill="#fff7ed" filter="url(#softGlow)" />
+    <circle r="20" fill="#fef08a" />
+
+    <!-- Radiant Solar Flares / Spikes -->
+    <line x1="0" y1="-55" x2="0" y2="-28" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+    <line x1="0" y1="28" x2="0" y2="55" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+    <line x1="-55" y1="0" x2="-28" y2="0" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+    <line x1="28" y1="0" x2="55" y2="0" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+
+    <line x1="-38" y1="-38" x2="-20" y2="-20" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+    <line x1="20" y1="20" x2="38" y2="38" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+    <line x1="-38" y1="38" x2="-20" y2="20" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+    <line x1="20" y1="-20" x2="38" y2="-38" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- The Geometric Faceted Norse Raven (Muninn) -->
+  <!-- Scaled up from RavenLogo.tsx geometry to magnificent poster centerpiece -->
+  <g transform="translate(800, 330) scale(4.4)">
+    <!-- Shadow Projection -->
+    <ellipse cx="0" cy="50" rx="36" ry="12" fill="#000" opacity="0.45" filter="url(#softGlow)" />
+
+    <!-- Outer Octagonal Ring Accent -->
+    <polygon
+      points="0,-38 27,-24 38,0 27,24 0,38 -27,24 -38,0 -27,-24"
+      fill="rgba(15, 23, 42, 0.4)"
+      stroke="#38bdf8"
+      stroke-width="0.8"
+      stroke-opacity="0.6"
+    />
+
+    <!-- Left Wing: Secondary Base Feather Layer -->
+    <path
+      d="M 0,-28 L -18,-22 L -32,-12 L -40,0 L -32,4 L -22,-2 L -28,10 L -18,8 L -10,0 Z"
+      fill="url(#obsidianFacet)"
+      stroke="#0284c7"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+
+    <!-- Left Wing: Primary Faceted Gold Feather Lattice -->
+    <path
+      d="M 0,-28 L -16,-24 L -28,-14 L -36,0 L -28,5 L -19,-1 L -24,12 L -15,10 L -8,0 Z"
+      fill="url(#goldFacetLeft)"
+      stroke="#fef08a"
+      stroke-width="1.6"
+      stroke-linejoin="round"
+      filter="url(#softGlow)"
+    />
+
+    <!-- Left Wing: Internal Geometric Struts -->
+    <line x1="0" y1="-28" x2="-19" y2="-1" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.8" />
+    <line x1="-16" y1="-24" x2="-15" y2="10" stroke="#fed7aa" stroke-width="1" stroke-opacity="0.9" />
+
+    <!-- Right Wing: Secondary Base Feather Layer -->
+    <path
+      d="M 0,-28 L 18,-22 L 32,-12 L 40,0 L 32,4 L 22,-2 L 28,10 L 18,8 L 10,0 Z"
+      fill="url(#obsidianFacet)"
+      stroke="#0284c7"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+
+    <!-- Right Wing: Primary Faceted Gold Feather Lattice -->
+    <path
+      d="M 0,-28 L 16,-24 L 28,-14 L 36,0 L 28,5 L 19,-1 L 24,12 L 15,10 L 8,0 Z"
+      fill="url(#goldFacetRight)"
+      stroke="#fef08a"
+      stroke-width="1.6"
+      stroke-linejoin="round"
+      filter="url(#softGlow)"
+    />
+
+    <!-- Right Wing: Internal Geometric Struts -->
+    <line x1="0" y1="-28" x2="19" y2="-1" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.8" />
+    <line x1="16" y1="-24" x2="15" y2="10" stroke="#fed7aa" stroke-width="1" stroke-opacity="0.9" />
+
+    <!-- Central Norse Knotwork Diamond (Heart & Memory Core) -->
+    <path
+      d="M 0,-16 L 12,-2 L 0,16 L -12,-2 Z"
+      fill="url(#obsidianFacet)"
+      stroke="#38bdf8"
+      stroke-width="1.8"
+      stroke-linejoin="round"
+      filter="url(#softGlow)"
+    />
+    <path
+      d="M 0,-12 L 9,-2 L 0,12 L -9,-2 Z"
+      fill="url(#cyanFacet)"
+      stroke="#f97316"
+      stroke-width="1"
+      stroke-linejoin="round"
+    />
+
+    <!-- Interlocking Tail Runic Knotwork -->
+    <path
+      d="M 0,16 L 6,26 L 0,36 L -6,26 Z"
+      fill="url(#obsidianFacet)"
+      stroke="#38bdf8"
+      stroke-width="1.5"
+      stroke-linejoin="round"
+    />
+    <line x1="0" y1="16" x2="0" y2="36" stroke="#f97316" stroke-width="1.4" />
+
+    <!-- Crown Crest & Dual Beaks (Facing Future & Past) -->
+    <path
+      d="M -6,-32 L 0,-36 L 6,-32 L 0,-24 Z"
+      fill="#f97316"
+      stroke="#fed7aa"
+      stroke-width="1.4"
+      stroke-linejoin="round"
+    />
+
+    <!-- Twin Sun-Gold Memory Eyes (Huginn & Muninn Vision) -->
+    <circle cx="-6" cy="-24" r="2.2" fill="#fff7ed" filter="url(#softGlow)" />
+    <circle cx="6" cy="-24" r="2.2" fill="#fff7ed" filter="url(#softGlow)" />
+    <circle cx="-6" cy="-24" r="1.2" fill="#ea580c" />
+    <circle cx="6" cy="-24" r="1.2" fill="#ea580c" />
+
+    <!-- Central Energy Conduit Cross -->
+    <line x1="0" y1="-16" x2="0" y2="16" stroke="#fef08a" stroke-width="1.4" />
+    <line x1="-12" y1="-2" x2="12" y2="-2" stroke="#38bdf8" stroke-width="1.4" />
+  </g>
+
+  <!-- Clean, Authoritative Norse Typography: MUNINN -->
+  <g transform="translate(800, 680)" text-anchor="middle">
+    <!-- Drop Shadow Layer -->
+    <text
+      y="4"
+      font-family="-apple-system, BlinkMacSystemFont, 'Cinzel', 'Trajan Pro', 'Segoe UI', Georgia, serif"
+      font-size="78"
+      font-weight="900"
+      letter-spacing="18"
+      fill="#000000"
+      opacity="0.8"
+    >
+      MUNINN
+    </text>
+
+    <!-- Main Title: MUNINN -->
+    <text
+      y="0"
+      font-family="-apple-system, BlinkMacSystemFont, 'Cinzel', 'Trajan Pro', 'Segoe UI', Georgia, serif"
+      font-size="78"
+      font-weight="900"
+      letter-spacing="18"
+      fill="url(#goldTextGrad)"
+      filter="url(#softGlow)"
+    >
+      MUNINN
+    </text>
+
+    <!-- Horizontal Runic Decorative Rule Lines -->
+    <g opacity="0.6">
+      <line x1="-280" y1="28" x2="-60" y2="28" stroke="#f97316" stroke-width="1.2" />
+      <polygon points="-60,28 -52,24 -44,28 -52,32" fill="#38bdf8" />
+      
+      <circle cx="0" cy="28" r="3.5" fill="#fef08a" />
+      
+      <polygon points="44,28 52,24 60,28 52,32" fill="#38bdf8" />
+      <line x1="60" y1="28" x2="280" y2="28" stroke="#f97316" stroke-width="1.2" />
+    </g>
+
+    <!-- Subtitle: A Living Memory for Your Work -->
+    <text
+      y="68"
+      font-family="-apple-system, BlinkMacSystemFont, 'JetBrains Mono', 'Fira Code', 'Segoe UI', monospace"
+      font-size="20"
+      font-weight="600"
+      letter-spacing="6"
+      fill="#e2e8f0"
+    >
+      A LIVING MEMORY FOR YOUR WORK
+    </text>
+
+    <!-- Architectural Pillars Pill Badges -->
+    <g transform="translate(0, 115)" font-family="monospace" font-size="12" letter-spacing="2.5" font-weight="600">
+      <!-- Badge 1: Opt-In Capture -->
+      <rect x="-370" y="-16" width="220" height="32" rx="16" fill="rgba(15, 23, 42, 0.7)" stroke="#f97316" stroke-opacity="0.4" stroke-width="1" />
+      <circle cx="-352" cy="0" r="4" fill="#f97316" />
+      <text x="-338" y="4" text-anchor="start" fill="#fed7aa">OPT-IN CAPTURE</text>
+
+      <!-- Badge 2: Verifiable Claims -->
+      <rect x="-120" y="-16" width="240" height="32" rx="16" fill="rgba(15, 23, 42, 0.7)" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1" />
+      <circle cx="-102" cy="0" r="4" fill="#38bdf8" />
+      <text x="-88" y="4" text-anchor="start" fill="#bae6fd">VERIFIABLE CLAIMS</text>
+
+      <!-- Badge 3: Proactive Resurfacing -->
+      <rect x="150" y="-16" width="240" height="32" rx="16" fill="rgba(15, 23, 42, 0.7)" stroke="#f97316" stroke-opacity="0.4" stroke-width="1" />
+      <circle cx="168" cy="0" r="4" fill="#f97316" />
+      <text x="182" y="4" text-anchor="start" fill="#fed7aa">PROACTIVE MEMORY</text>
+    </g>
+  </g>
+</svg>

@@ -6,6 +6,7 @@ import { RavenLogo } from "@/components/brand/RavenLogo";
 import { CelestialOrb } from "@/components/brand/CelestialOrb";
 import { MythicIcon } from "@/components/common/MythicIcons";
 import { ElementalFlowGraph } from "@/components/docs/ElementalFlowGraph";
+import { MuninnAnimatedPoster } from "@/components/brand/MuninnAnimatedPoster";
 import { runeCipherDecode, elasticRecoil } from "@/lib/animations";
 
 export default function DocsPage() {
@@ -129,6 +130,8 @@ export default function DocsPage() {
                     </p>
                   </div>
                 </div>
+
+                <MuninnAnimatedPoster className="mb-6 shadow-2xl" />
 
                 <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-4">
                   <p>

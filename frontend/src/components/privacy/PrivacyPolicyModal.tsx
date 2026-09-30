@@ -114,7 +114,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyModalProps)
           <section className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
             <h4 className="text-xs font-semibold text-white">Developer & Contact Information</h4>
             <p className="text-[11px]">
-              Engineered by <strong className="text-white">Kshitiz Kumar</strong>.
+              Engineered by <strong className="text-white">Erebus</strong>.
             </p>
             <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-orange-400 pt-1">
               <a

@@ -2,7 +2,7 @@
 
 **Effective Date**: September 27, 2026  
 **Project**: Muninn  
-**Author & Maintainer**: Kshitiz Kumar ([kshitiz23kumar@gmail.com](mailto:kshitiz23kumar@gmail.com))  
+**Author & Maintainer**: Erebus ([kshitiz23kumar@gmail.com](mailto:kshitiz23kumar@gmail.com))  
 **Repository**: [github.com/Erebuzzz/Muninn](https://github.com/Erebuzzz/Muninn)
 
 ---
