@@ -465,7 +465,7 @@ sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (
     // 1. Delete resurfacing events
     await sql(
       `DELETE FROM resurfacing_events 
-       WHERE conversation_id = $1::uuid 
+       WHERE triggered_by_conv = $1::uuid 
           OR subject_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
@@ -473,8 +473,8 @@ sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (
     // 2. Delete relationships involving claims from this conversation
     await sql(
       `DELETE FROM relationships 
-       WHERE source_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)
-          OR target_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
+       WHERE from_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)
+          OR to_claim_id IN (SELECT id FROM claims WHERE conversation_id = $1::uuid)`,
       [sessionId]
     );
 
@@ -505,7 +505,7 @@ sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (
     try {
       await sql(
         `DELETE FROM entities 
-         WHERE user_id = $1 
+         WHERE user_id = $1::uuid 
            AND id NOT IN (SELECT DISTINCT entity_id FROM claim_entities)`,
         [userId]
       );
@@ -519,7 +519,8 @@ sessionsRouter.delete("/:id", rateLimiter(60000, 30, "sessions-delete"), async (
       deleted_id: sessionId,
     });
   } catch (err: any) {
-    return c.json({ error: "Failed to delete session", details: err?.message }, 500);
+    console.error(`[Sessions] Error deleting session ${sessionId}:`, err);
+    return c.json({ error: "Failed to delete session", details: err?.message || String(err) }, 500);
   }
 });
 
